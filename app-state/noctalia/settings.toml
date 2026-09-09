@@ -34,7 +34,7 @@ behavior_order = [ "lock", "screen-off", "lock-and-suspend" ]
     [idle.behavior.lock]
     action = "lock"
     enabled = true
-    timeout = 180.0
+    timeout = 210.0
 
     [idle.behavior.lock-and-suspend]
     action = "lock_and_suspend"
@@ -44,7 +44,7 @@ behavior_order = [ "lock", "screen-off", "lock-and-suspend" ]
     [idle.behavior.screen-off]
     action = "screen_off"
     enabled = true
-    timeout = 240.0
+    timeout = 180.0
 
 [lockscreen]
 blurred_desktop = true
