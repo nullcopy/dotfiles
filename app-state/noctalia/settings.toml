@@ -39,7 +39,7 @@ behavior_order = [ "lock", "screen-off", "lock-and-suspend" ]
     [idle.behavior.lock-and-suspend]
     action = "lock_and_suspend"
     enabled = true
-    timeout = 480.0
+    timeout = 900.0
 
     [idle.behavior.screen-off]
     action = "screen_off"
