@@ -3,9 +3,10 @@ config_version = 13
 [bar.default]
 auto_hide = true
 end = [
+    "tray",
     "media",
     "wallpaper",
-    "tray",
+    "caffeine",
     "notifications",
     "clipboard",
     "network",
@@ -22,6 +23,9 @@ reserve_space = false
 start = [ "group:g1", "workspaces" ]
 
     [[bar.default.capsule_group]]
+    accordion = false
+    accordion_direction = "end"
+    enabled = true
     fill = "surface_variant"
     id = "g1"
     members = [ "cpu", "ram", "temp" ]
