@@ -1,22 +1,18 @@
-{
-  pkgs,
-  fenix,
-  system,
-}:
+{ pkgs, ... }:
 
-let
-  rustToolchain = fenix.packages.${system}.combine [
-    fenix.packages.${system}.stable.cargo
-    fenix.packages.${system}.stable.rustc
-    fenix.packages.${system}.stable.rustfmt
-    fenix.packages.${system}.stable.clippy
-    fenix.packages.${system}.stable.rust-src
-    fenix.packages.${system}.stable.rust-analyzer
-  ];
-in
 pkgs.mkShell {
   packages = with pkgs; [
-    rustToolchain
+    # Stable toolchain straight from nixpkgs, so every path substitutes
+    # from cache.nixos.org instead of being unpacked and patchelf'd
+    # locally. pkgs.rust-analyzer is a wrapper that already points
+    # RUST_SRC_PATH at rustPlatform.rustLibSrc, so std resolves with no
+    # extra wiring. Projects needing a specific channel or version should
+    # carry their own flake.
+    rustc
+    cargo
+    rustfmt
+    clippy
+    rust-analyzer
 
     # Sets LIBCLANG_PATH + BINDGEN_EXTRA_CLANG_ARGS for bindgen-based crates
     # (librocksdb-sys, zcash_script, ring, ...).
