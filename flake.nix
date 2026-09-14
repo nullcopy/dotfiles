@@ -14,12 +14,6 @@
     nixvim = {
       url = "github:nix-community/nixvim";
     };
-
-    # Only needed by the rust dev shell.
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
@@ -27,7 +21,6 @@
       self,
       nixpkgs,
       home-manager,
-      fenix,
       ...
     }:
     let
@@ -63,12 +56,16 @@
       # Shells are auto-discovered from ./devShells/*.nix. mkDevShell sets
       # $SHELL and re-execs into zsh: `nix develop` spawns a bare
       # bashInteractive, which child processes would otherwise inherit.
+      # The guard keeps that out of runs with no terminal on stdout, which
+      # the exec would otherwise hijack, `nix develop --command` included.
       mkDevShell =
         file:
-        (import file { inherit pkgs system fenix; }).overrideAttrs (old: {
+        (import file { inherit pkgs system; }).overrideAttrs (old: {
           shellHook = (old.shellHook or "") + ''
             export SHELL=${pkgs.zsh}/bin/zsh
-            exec ${pkgs.zsh}/bin/zsh
+            if [ -t 1 ] && [ -z "''${DEVSHELL_NO_EXEC:-}" ]; then
+              exec ${pkgs.zsh}/bin/zsh
+            fi
           '';
         });
 

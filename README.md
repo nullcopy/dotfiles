@@ -59,7 +59,7 @@ nix develop ~/.dotfiles#rust
 ```
 
 One shell per file in `devShells/`; add one by dropping a file there (a
-function taking `{ pkgs, system, fenix }` returning a `pkgs.mkShell`).
+function taking `{ pkgs, system }` returning a `pkgs.mkShell`).
 `#rust` includes `rustPlatform.bindgenHook`, so bindgen-based crates
 build without manual setup.
 
