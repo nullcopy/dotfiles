@@ -32,6 +32,9 @@ start = [ "group:g1", "workspaces" ]
     opacity = 1.0
     padding = 6.0
 
+[dock]
+auto_hide = true
+
 [idle]
 behavior_order = [ "lock", "screen-off", "lock-and-suspend" ]
 
