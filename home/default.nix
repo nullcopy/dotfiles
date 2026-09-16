@@ -122,7 +122,7 @@
 
     programs.starship = {
       enable = true;
-      presets = [ "gruvbox-rainbow" ];
+      presets = [ "pure-preset" ];
     };
 
     programs.gpg.enable = true;
