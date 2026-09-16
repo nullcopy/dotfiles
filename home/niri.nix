@@ -140,6 +140,19 @@ in
           Mod+Shift+5 hotkey-overlay-title=null { move-column-to-workspace 5; }
       }
 
+      // Alacritty runs with decorations="None", so niri counts it as a
+      // window that agreed to omit its CSD and draws the focus ring as a
+      // solid rectangle *behind* it rather than as an outline around it.
+      // That backdrop is invisible while the terminal is opaque, but
+      // window.opacity = 0.9 lets it through: the focused terminal picks
+      // up the focus-ring colour and reads as fully opaque, while an
+      // unfocused one shows the wallpaper. Draw the ring as an outline so
+      // the translucent look holds in both states.
+      window-rule {
+          match app-id="Alacritty"
+          draw-border-with-background false
+      }
+
       switch-events {
           // Lock screen on laptop lid close
           lid-close { ${msg "session lock"}; }
