@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Sparrow Wallet
-Comment=Sparrow Bitcoin wallet by Craigraw
-Exec=/home/user/.local/share/Sparrow/bin/Sparrow
-Icon=/home/user/.local/share/Sparrow/lib/Sparrow.png
-Terminal=false
-Categories=Utility;
