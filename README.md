@@ -64,6 +64,12 @@ function taking `{ pkgs, system }` returning a `pkgs.mkShell`).
 `#rust` includes `rustPlatform.bindgenHook`, so bindgen-based crates
 build without manual setup.
 
+`all` is the exception to one-shell-per-language: it composes the
+language shells with `inputsFrom`, for a session that touches several of
+them. `inputsFrom` merges the `*Inputs` lists and the shell hooks and
+nothing else, so a plain env attr set by one of the composed shells
+(`rust.nix`'s `LD_LIBRARY_PATH`) has to be repeated there.
+
 `devshell` wraps `nix develop --profile
 ~/.local/state/nix/profiles/devshells/<name>` rather than plain `nix
 develop <flake>#<name>`. A plain `nix develop` registers no GC root, so
