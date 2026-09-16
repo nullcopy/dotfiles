@@ -52,16 +52,36 @@ to persist.
 ## devShells
 
 One fallback shell per language, for projects without their own flake.
-Pick one explicitly:
+Enter one with the `devshell` zsh function, which takes a shell name (run
+it with no argument to list them):
 
 ```
-nix develop ~/.dotfiles#rust
+devshell rust
 ```
 
 One shell per file in `devShells/`; add one by dropping a file there (a
 function taking `{ pkgs, system }` returning a `pkgs.mkShell`).
 `#rust` includes `rustPlatform.bindgenHook`, so bindgen-based crates
 build without manual setup.
+
+`devshell` wraps `nix develop --profile
+~/.local/state/nix/profiles/devshells/<name>` rather than plain `nix
+develop <flake>#<name>`. A plain `nix develop` registers no GC root, so
+the next garbage collection deletes the toolchain and the following entry
+re-downloads the whole closure — the reason `#rust` felt like it was
+fetching a new toolchain every time. A profile is a GC root, so the
+closure survives; the flake ref is still evaluated on every entry, so the
+toolchain moves only when `flake.lock` does.
+
+Those profiles sit under the per-user profile directory that
+`nix-collect-garbage` scans, so the weekly `nix.gc` user timer (in
+`home/default.nix`) prunes generations older than 30 days. The current
+generation of each profile is never collected, so every shell you have
+entered pins one toolchain until you delete its profile:
+
+```
+rm ~/.local/state/nix/profiles/devshells/rust*   # then let nix.gc run
+```
 
 ## Day to day
 

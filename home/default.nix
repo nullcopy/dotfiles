@@ -44,6 +44,21 @@
     # available after the first `nix run home-manager -- switch`.
     programs.home-manager.enable = true;
 
+    ## ----- nix -----------------------------------------------------------------
+    # A user-level collector, because NixOS' own nix.gc timer runs as root:
+    # it prunes /nix/var/nix/profiles and never looks in
+    # ~/.local/state/nix/profiles, where the home-manager profile and the
+    # devshell profiles created by `devshell` live. --delete-older-than keeps
+    # the current generation and the newest one past the cutoff, so a
+    # rollback to 30 days ago stays possible; everything older is collected.
+    # This pulls in pkgs.nix for the unit's ExecStart, which may differ from
+    # the system nix on NixOS.
+    nix.gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
+    };
+
     ## ----- packages ------------------------------------------------------------
     # CLI-only here; GUI packages live in desktop.nix.
     home.packages = with pkgs; [
@@ -59,6 +74,24 @@
       autosuggestion.enable = true;
       initContent = ''
         export PATH="$HOME/.cargo/bin:$PATH"
+
+        ## --- devShell helper ---------------------------------------------
+        # Enter a fallback shell from this flake through a profile, because a
+        # profile is a GC root and a bare `nix develop` is not: nothing roots
+        # the toolchain, so the collector deletes it and the next entry pulls
+        # the whole closure down again. The profile sits under the per-user
+        # profile dir that nix-collect-garbage scans, so the `nix.gc` timer
+        # prunes its old generations too.
+        devshell () {
+          if [ $# -ne 1 ]; then
+            echo "usage: devshell <name>" >&2
+            echo "available: $(ls ${config.my.repoPath}/devShells | sed 's/\.nix$//' | tr '\n' ' ')" >&2
+            return 2
+          fi
+          local dir=''${XDG_STATE_HOME:-$HOME/.local/state}/nix/profiles/devshells
+          mkdir -p "$dir" || return
+          nix develop --profile "$dir/$1" "${config.my.repoPath}#$1"
+        }
       '';
       history = {
         path = "${config.home.homeDirectory}/.zsh_history";
