@@ -54,6 +54,7 @@ in
       settings = {
         font.normal.family = "JetBrainsMono Nerd Font";
         window.decorations = "None";
+        window.opacity = 0.9;
       };
     };
 

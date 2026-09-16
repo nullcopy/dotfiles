@@ -9,7 +9,6 @@
 
 
 # Manual ignores
-.config/zsh/.zcompdump-wirerider-5.9*
 .config/kde.org/*
 .config/dconf/
 .config/go/
@@ -21,8 +20,6 @@
 .config/QtProject.conf
 .config/pulse
 .config/systemd
-.config/zsh/ohmyzsh
-.config/zsh/.oh-my-zsh
 .config/joplin-desktop/
 .config/GIMP/
 .config/BraveSoftware
