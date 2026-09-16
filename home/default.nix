@@ -59,6 +59,11 @@
       options = "--delete-older-than 30d";
     };
 
+    ## ----- session -------------------------------------------------------------
+    home.sessionVariables = {
+      COLORTERM = "truecolor";
+    };
+
     ## ----- packages ------------------------------------------------------------
     # CLI-only here; GUI packages live in desktop.nix.
     home.packages = with pkgs; [
@@ -72,9 +77,8 @@
     programs.zsh = {
       enable = true;
       autosuggestion.enable = true;
+      defaultKeymap = "viins";
       initContent = ''
-        export PATH="$HOME/.cargo/bin:$PATH"
-
         ## --- devShell helper ---------------------------------------------
         # Enter a fallback shell from this flake through a profile, because a
         # profile is a GC root and a bare `nix develop` is not: nothing roots
