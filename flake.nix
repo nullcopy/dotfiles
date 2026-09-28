@@ -43,13 +43,13 @@
           extraSpecialArgs = { inherit inputs; };
           modules = [
             ./home
-            (
-              {
-                my.desktop.enable = desktop;
-                home.stateVersion = stateVersion;
-              }
-              // lib.optionalAttrs (repoPath != null) { my.repoPath = repoPath; }
-            )
+            {
+              my.desktop.enable = desktop;
+              home.stateVersion = stateVersion;
+            }
+            # A module of its own: merged into the one above with `//`,
+            # its `my` would replace that one's and drop desktop.enable.
+            (lib.optionalAttrs (repoPath != null) { my.repoPath = repoPath; })
           ];
         };
 
