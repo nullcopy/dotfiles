@@ -92,6 +92,16 @@
       # One shell per language; enter with `nix develop <flake>#<name>`.
       devShells.${system} = lib.genAttrs shellNames (name: mkDevShell (./devShells + "/${name}.nix"));
 
+      # The source trees the devShells are evaluated from, as one buildable
+      # path for `devshell` to hold a GC root on: a shell's closure does not
+      # include them. List every input that a file in ./devShells reads.
+      packages.${system}.devshell-inputs = pkgs.linkFarm "devshell-inputs" [
+        {
+          name = "nixpkgs";
+          path = nixpkgs.outPath;
+        }
+      ];
+
       formatter.${system} = pkgs.nixfmt;
     };
 }

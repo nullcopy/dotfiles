@@ -89,6 +89,18 @@ entered pins one toolchain until you delete its profile:
 rm ~/.local/state/nix/profiles/devshells/rust*   # then let nix.gc run
 ```
 
+A profile roots the shell's closure, not the source trees the flake is
+evaluated from, so a collection takes nixpkgs and the next entry fetches
+it again. The eval cache would skip the evaluation altogether, but it is
+keyed on a flake fingerprint, which a checkout with uncommitted changes
+has none of — and this one carries them by design (noctalia writes its
+config back into `app-state/`). So the flake has a `devshell-inputs`
+package, a `linkFarm` of those trees, and `devshell` builds it with
+`--out-link ~/.local/state/nix/gcroots/devshell-inputs` before entering.
+The link is repointed on each entry, so a `flake.lock` bump releases the
+tree it moved off. A shell that reads an input other than nixpkgs needs
+that input added to `devshell-inputs`.
+
 ## Day to day
 
 ```
