@@ -20,6 +20,7 @@ home/
   desktop.nix          # GUI apps, noctalia, alacritty — my.desktop.enable only
   niri.nix             # niri keybindings wired to Noctalia IPC — desktop only
 devShells/             # fallback per-language shells (see "devShells")
+doc/                   # longer notes (devshells.md)
 ```
 
 ## Setup on a new machine
@@ -59,47 +60,8 @@ it with no argument to list them):
 devshell rust
 ```
 
-One shell per file in `devShells/`; add one by dropping a file there (a
-function taking `{ pkgs, system }` returning a `pkgs.mkShell`).
-`#rust` includes `rustPlatform.bindgenHook`, so bindgen-based crates
-build without manual setup.
-
-`all` is the exception to one-shell-per-language: it composes the
-language shells with `inputsFrom`, for a session that touches several of
-them. `inputsFrom` merges the `*Inputs` lists and the shell hooks and
-nothing else, so a plain env attr set by one of the composed shells
-(`rust.nix`'s `LD_LIBRARY_PATH`) has to be repeated there.
-
-`devshell` wraps `nix develop --profile
-~/.local/state/nix/profiles/devshells/<name>` rather than plain `nix
-develop <flake>#<name>`. A plain `nix develop` registers no GC root, so
-the next garbage collection deletes the toolchain and the following entry
-re-downloads the whole closure — the reason `#rust` felt like it was
-fetching a new toolchain every time. A profile is a GC root, so the
-closure survives; the flake ref is still evaluated on every entry, so the
-toolchain moves only when `flake.lock` does.
-
-Those profiles sit under the per-user profile directory that
-`nix-collect-garbage` scans, so the weekly `nix.gc` user timer (in
-`home/default.nix`) prunes generations older than 30 days. The current
-generation of each profile is never collected, so every shell you have
-entered pins one toolchain until you delete its profile:
-
-```
-rm ~/.local/state/nix/profiles/devshells/rust*   # then let nix.gc run
-```
-
-A profile roots the shell's closure, not the source trees the flake is
-evaluated from, so a collection takes nixpkgs and the next entry fetches
-it again. The eval cache would skip the evaluation altogether, but it is
-keyed on a flake fingerprint, which a checkout with uncommitted changes
-has none of — and this one carries them by design (noctalia writes its
-config back into `app-state/`). So the flake has a `devshell-inputs`
-package, a `linkFarm` of those trees, and `devshell` builds it with
-`--out-link ~/.local/state/nix/gcroots/devshell-inputs` before entering.
-The link is repointed on each entry, so a `flake.lock` bump releases the
-tree it moved off. A shell that reads an input other than nixpkgs needs
-that input added to `devshell-inputs`.
+Adding shells, the `all` shell and how the shells survive garbage
+collection are covered in [doc/devshells.md](doc/devshells.md).
 
 ## Day to day
 
