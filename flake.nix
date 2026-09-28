@@ -74,6 +74,23 @@
         builtins.attrNames
         (map (lib.removeSuffix ".nix"))
       ];
+
+      # The source trees of the inputs in `ins` and of the inputs of each,
+      # as linkFarm entries under `dir`.
+      inputTrees =
+        dir: ins:
+        lib.concatLists (
+          lib.mapAttrsToList (
+            name: input:
+            [
+              {
+                name = "${dir}/${name}";
+                path = input.outPath;
+              }
+            ]
+            ++ inputTrees "${dir}/${name}.inputs" (input.inputs or { })
+          ) ins
+        );
     in
     {
       # `home-manager switch --flake <this repo>` auto-selects the
@@ -92,15 +109,29 @@
       # One shell per language; enter with `nix develop <flake>#<name>`.
       devShells.${system} = lib.genAttrs shellNames (name: mkDevShell (./devShells + "/${name}.nix"));
 
-      # The source trees the devShells are evaluated from, as one buildable
-      # path for `devshell` to hold a GC root on: a shell's closure does not
-      # include them. List every input that a file in ./devShells reads.
-      packages.${system}.devshell-inputs = pkgs.linkFarm "devshell-inputs" [
-        {
-          name = "nixpkgs";
-          path = nixpkgs.outPath;
-        }
-      ];
+      packages.${system} = {
+        # The source trees the devShells are evaluated from, as one
+        # buildable path for `devshell` to hold a GC root on: a shell's
+        # closure does not include them. List every input that a file in
+        # ./devShells reads.
+        devshell-inputs = pkgs.linkFarm "devshell-inputs" [
+          {
+            name = "nixpkgs";
+            path = nixpkgs.outPath;
+          }
+        ];
+
+        # What the daily fetch (home/updates.nix) builds and roots next to
+        # the generation: every devShell, and the source tree of every
+        # input, which no closure includes.
+        fetch-roots = pkgs.linkFarm "fetch-roots" (
+          inputTrees "inputs" (removeAttrs inputs [ "self" ])
+          ++ map (name: {
+            name = "devShells/${name}";
+            path = self.devShells.${system}.${name};
+          }) shellNames
+        );
+      };
 
       formatter.${system} = pkgs.nixfmt;
     };

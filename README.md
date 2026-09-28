@@ -18,9 +18,10 @@ home/
   neovim.nix           # nixvim config (AstroNvim-flavoured UX)
   opencode.nix         # opencode pointed at the local ollama service
   desktop.nix          # GUI apps, noctalia, alacritty — my.desktop.enable only
+  updates.nix          # daily timer that fetches input updates ahead of a switch
   niri.nix             # niri keybindings wired to Noctalia IPC — desktop only
 devShells/             # fallback per-language shells (see "devShells")
-doc/                   # longer notes (devshells.md)
+doc/                   # longer notes (devshells.md, updates.md)
 ```
 
 ## Setup on a new machine
@@ -69,5 +70,8 @@ collection are covered in [doc/devshells.md](doc/devshells.md).
 home-manager switch --flake ~/.dotfiles                        # apply config edits
 nix flake update && home-manager switch --flake ~/.dotfiles    # bump inputs, then apply
 ```
+
+A daily timer fetches what the second line would download, so most of
+it is in the store by then. See [doc/updates.md](doc/updates.md).
 
 Pre-commit formatting hook: `git config core.hooksPath .githooks` after clone.
