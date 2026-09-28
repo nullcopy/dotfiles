@@ -92,6 +92,17 @@
             echo "available: $(ls ${config.my.repoPath}/devShells | sed 's/\.nix$//' | tr '\n' ' ')" >&2
             return 2
           fi
+          # The profile below roots the shell's closure, but not the source
+          # trees the flake is evaluated from, and a checkout with
+          # uncommitted changes gets no eval cache to skip that evaluation.
+          # devshell-inputs links those trees and the out-link roots them.
+          # It stays out of the profiles dir, where nix-collect-garbage
+          # would take it for a profile.
+          local roots=''${XDG_STATE_HOME:-$HOME/.local/state}/nix/gcroots
+          mkdir -p "$roots" || return
+          nix build --out-link "$roots/devshell-inputs" \
+            "${config.my.repoPath}#devshell-inputs"
+
           local dir=''${XDG_STATE_HOME:-$HOME/.local/state}/nix/profiles/devshells
           mkdir -p "$dir" || return
           nix develop --profile "$dir/$1" "${config.my.repoPath}#$1"
