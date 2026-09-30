@@ -25,6 +25,20 @@ a `pkgs.mkShell`.
   the composed shells (`rust.nix`'s `LD_LIBRARY_PATH`) has to be repeated
   there.
 
+## Editor tooling
+
+nvim installs no language server and no formatter, for any language.
+`home/neovim.nix` sets `package = null` on every server it configures,
+so nvim runs whatever `clangd`, `gopls` or `rust-analyzer` is on `PATH`,
+and the home closure carries none of them. A server or formatter that is
+not on `PATH` does not run.
+
+They come from a shell here or from the project's own flake, so start
+nvim inside one. nvim is configured for two servers that no shell here
+provides: `marksman` for Markdown and `yaml-language-server` for YAML.
+Add them to a shell to use them. A new language shell has to bring its
+own server.
+
 ## Garbage collection
 
 A plain `nix develop <flake>#<name>` registers no GC root, so the next

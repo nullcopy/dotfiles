@@ -25,6 +25,10 @@ in
     withRuby = false;
     withPython3 = false;
 
+    # gopls asks nixvim for a Go toolchain next to it. The go devShell
+    # has one, same as the server (see plugins.lsp below).
+    dependencies.go.enable = false;
+
     # =========================================================================
     # Global variables
     # =========================================================================
@@ -185,12 +189,19 @@ in
       # -----------------------------------------------------------------------
       # LSP
       # -----------------------------------------------------------------------
+      # No server is installed here: `package = null` leaves the binary to
+      # PATH, so a devShell (../devShells) or a project flake may supply it
+      # and it matches the devshell/project toolchain.
       lsp = {
         enable = true;
         servers = {
-          bashls.enable = true;
+          bashls = {
+            enable = true;
+            package = null;
+          };
           clangd = {
             enable = true;
+            package = null;
             cmd = [
               "clangd"
               "--background-index"
@@ -198,23 +209,37 @@ in
               "--header-insertion=iwyu"
             ];
           };
-          gopls.enable = true;
+          gopls = {
+            enable = true;
+            package = null;
+          };
           lua_ls = {
             enable = true;
+            package = null;
             settings.Lua.diagnostics.globals = [ "vim" ];
           };
-          marksman.enable = true;
-          nil_ls.enable = true;
-          pyright.enable = true;
-          # rust-analyzer resolves cargo/rustc/rustfmt/clippy from PATH:
-          # launch nvim inside `nix develop` so lints match the project
-          # toolchain. The install* = false flags keep them PATH-resolved.
+          marksman = {
+            enable = true;
+            package = null;
+          };
+          nil_ls = {
+            enable = true;
+            package = null;
+          };
+          pyright = {
+            enable = true;
+            package = null;
+          };
           rust_analyzer = {
             enable = true;
+            package = null;
             installCargo = false;
             installRustc = false;
           };
-          yamlls.enable = true;
+          yamlls = {
+            enable = true;
+            package = null;
+          };
         };
       };
       # Non-intrusive LSP progress notifications in the bottom-right corner.

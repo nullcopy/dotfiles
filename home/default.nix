@@ -16,6 +16,7 @@
     ./opencode.nix
     ./niri.nix
     ./desktop.nix
+    ./updates.nix
   ];
 
   ## ----- per-machine options ---------------------------------------------------
