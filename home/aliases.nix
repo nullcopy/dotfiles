@@ -11,13 +11,6 @@ in
 {
   programs.zsh.initContent = ''
     ## --- git helper functions ----------------------------------------
-    # Browse and cd to git worktree directory
-    cdwt () {
-      local selected
-      selected=$(git worktree list | fzf)
-      [ -n "$selected" ] && cd "$(echo "$selected" | awk '{print $1}')"
-    }
-
     # Returns the name of the main branch (main or master).
     function git_main_branch() {
       command git rev-parse --git-dir &>/dev/null || return
@@ -288,12 +281,6 @@ in
 
     gignore = "git update-index --assume-unchanged";
     gunignore = "git update-index --no-assume-unchanged";
-
-    gwt = "git worktree";
-    gwta = "git worktree add";
-    gwtls = "git worktree list";
-    gwtmv = "git worktree move";
-    gwtrm = "git worktree remove";
 
     grt = ''cd "$(git rev-parse --show-toplevel || echo .)"'';
     gwch = "git log --patch --abbrev-commit --pretty=medium --raw";

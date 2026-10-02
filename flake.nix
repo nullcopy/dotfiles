@@ -14,6 +14,11 @@
     nixvim = {
       url = "github:nix-community/nixvim";
     };
+
+    gwt = {
+      url = "github:nullcopy/gwt";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

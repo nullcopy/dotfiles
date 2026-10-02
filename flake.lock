@@ -21,6 +21,26 @@
         "type": "github"
       }
     },
+    "gwt": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790961758,
+        "narHash": "sha256-Q9pc1gl14yPZyUghtLgq2UMLtEcZbwacPZZFXPUOx0w=",
+        "owner": "nullcopy",
+        "repo": "gwt",
+        "rev": "120177558bfdea69d1719f58a65885a8213c8815",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nullcopy",
+        "repo": "gwt",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -95,6 +115,7 @@
     },
     "root": {
       "inputs": {
+        "gwt": "gwt",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim"

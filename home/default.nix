@@ -11,6 +11,7 @@
 {
   imports = [
     inputs.nixvim.homeModules.nixvim
+    inputs.gwt.homeModules.default
     ./aliases.nix
     ./neovim.nix
     ./opencode.nix
@@ -172,6 +173,11 @@
     };
 
     programs.gpg.enable = true;
+
+    # git worktree wrappers for the .bare workspace layout (gwt init/clone/
+    # add/rm/switch); the module sources the function and installs the zsh
+    # completion.
+    programs.gwt.enable = true;
 
     programs.git = {
       enable = true;
