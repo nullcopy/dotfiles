@@ -67,8 +67,8 @@ collection are covered in [doc/devshells.md](doc/devshells.md).
 ## Day to day
 
 ```
-home-manager switch --flake ~/.dotfiles                        # apply config edits
-nix flake update && home-manager switch --flake ~/.dotfiles    # bump inputs, then apply
+nix flake update --commit-lock-file     # bump inputs & commit lockfile
+home-manager switch --flake ~/.dotfiles # apply config edits
 ```
 
 A daily timer fetches what the second line would download, so most of
