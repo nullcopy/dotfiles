@@ -54,15 +54,16 @@ to persist.
 ## devShells
 
 One fallback shell per language, for projects without their own flake.
-Enter one with the `devshell` zsh function, which takes a shell name (run
-it with no argument to list them):
+Enter one with the `devshell` zsh function, which takes a shell name
+(`devshell --help` lists them):
 
 ```
 devshell rust
+devshell --offline rust    # without a network
 ```
 
-Adding shells, the `all` shell and how the shells survive garbage
-collection are covered in [doc/devshells.md](doc/devshells.md).
+Adding shells, the `all` shell, offline use and how the shells survive
+garbage collection are covered in [doc/devshells.md](doc/devshells.md).
 
 ## Day to day
 

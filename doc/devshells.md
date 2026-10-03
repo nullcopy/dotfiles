@@ -5,11 +5,27 @@ One fallback shell per language, for projects without their own flake.
 ## Usage
 
 ```
-devshell rust    # enter a shell
-devshell         # list them
+devshell rust              # enter a shell
+devshell --offline rust    # enter one without a network
+devshell --help            # options and the list of shells
 ```
 
 `devshell` is a zsh function defined in `home/default.nix`.
+
+## Offline
+
+`--offline` is handed to nix. It turns substituters off and treats every
+downloaded file as current, so an entry touches nothing but the store.
+That is enough for a shell entered online since the last `flake.lock`
+bump: the roots below keep everything it needs. A shell never entered,
+or one whose toolchain moved with the lock, still needs the network.
+
+It is not the default because it is the wrong setting online: a lock
+bump would then compile the toolchain instead of downloading it. nix
+turns the network off by itself only when no interface holds a
+non-loopback address, which any virtual interface that stays up without
+an uplink defeats, so the flag has to be passed when the machine is
+offline.
 
 ## Shells
 
