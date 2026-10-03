@@ -33,9 +33,10 @@ nix build ~/.dotfiles#fetch-roots \
 
 - The updated lock is written to the runtime directory, not to the
   checkout. The fetch leaves `flake.lock` and the working tree alone.
-- `fetch-roots` (`flake.nix`) links every devShell and the source tree
-  of every input. The `forgebox` shell builds from source, so the fetch
-  compiles it when its inputs have moved.
+- `fetch-roots` (`flake.nix`) links every devShell, the
+  `bashInteractive` an entry realises, and the source tree of every
+  input. The `forgebox` shell builds from source, so the fetch compiles
+  it when its inputs have moved.
 - The builds are linked at `home-manager-fetch` and
   `home-manager-fetch-roots` in `~/.local/state/nix/gcroots`, or in
   `$XDG_STATE_HOME/nix/gcroots` where that is set. The links are GC

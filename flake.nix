@@ -115,22 +115,36 @@
       devShells.${system} = lib.genAttrs shellNames (name: mkDevShell (./devShells + "/${name}.nix"));
 
       packages.${system} = {
-        # The source trees the devShells are evaluated from, as one
-        # buildable path for `devshell` to hold a GC root on: a shell's
-        # closure does not include them. List every input that a file in
-        # ./devShells reads.
+        # What an entry needs besides the shell's closure, as one buildable
+        # path for `devshell` to hold a GC root on: the source trees the
+        # devShells are evaluated from, and the bashInteractive that
+        # `nix develop` realises from the flake's nixpkgs for the shell it
+        # spawns. Neither is in the closure, so without this root the
+        # collection takes them and the next entry downloads them again.
+        # List every input that a file in ./devShells reads.
         devshell-inputs = pkgs.linkFarm "devshell-inputs" [
           {
             name = "nixpkgs";
             path = nixpkgs.outPath;
           }
+          {
+            name = "bashInteractive";
+            path = pkgs.bashInteractive;
+          }
         ];
 
         # What the daily fetch (home/updates.nix) builds and roots next to
-        # the generation: every devShell, and the source tree of every
-        # input, which no closure includes.
+        # the generation: every devShell, the bashInteractive an entry
+        # realises, and the source tree of every input, which no closure
+        # includes.
         fetch-roots = pkgs.linkFarm "fetch-roots" (
           inputTrees "inputs" (removeAttrs inputs [ "self" ])
+          ++ [
+            {
+              name = "bashInteractive";
+              path = pkgs.bashInteractive;
+            }
+          ]
           ++ map (name: {
             name = "devShells/${name}";
             path = self.devShells.${system}.${name};

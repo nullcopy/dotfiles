@@ -62,7 +62,7 @@ entered pins one toolchain until you delete its profile:
 rm ~/.local/state/nix/profiles/devshells/rust*   # then let nix.gc run
 ```
 
-### Flake inputs
+### Flake inputs and bashInteractive
 
 A profile does not root the source trees the flake is evaluated from, so
 a collection would take nixpkgs. The eval cache would skip the evaluation
@@ -70,11 +70,16 @@ altogether, but it is keyed on a flake fingerprint, which a checkout with
 uncommitted changes has none of, and this one carries them by design
 (see "App state" in the README).
 
+Nor does it root `bashInteractive`: `nix develop` realises that package
+from the flake's nixpkgs on every entry, for the shell it spawns, and no
+closure here contains it. A collection takes it, and the next entry
+downloads it again before the shell starts.
+
 So the flake has a `devshell-inputs` package, a `linkFarm` of those
-trees, and `devshell` builds it with `--out-link
-~/.local/state/nix/gcroots/devshell-inputs` before entering. The link is
-repointed on each entry, so a `flake.lock` bump releases the tree it
-moved off.
+trees and of `bashInteractive`, and `devshell` builds it with
+`--out-link ~/.local/state/nix/gcroots/devshell-inputs` before entering.
+The link is repointed on each entry, so a `flake.lock` bump releases
+what it moved off.
 
 A shell that reads an input other than nixpkgs needs that input added to
 `devshell-inputs` in `flake.nix`.
