@@ -5,11 +5,27 @@ One fallback shell per language, for projects without their own flake.
 ## Usage
 
 ```
-devshell rust    # enter a shell
-devshell         # list them
+devshell rust              # enter a shell
+devshell --offline rust    # enter one without a network
+devshell --help            # options and the list of shells
 ```
 
 `devshell` is a zsh function defined in `home/default.nix`.
+
+## Offline
+
+`--offline` is handed to nix. It turns substituters off and treats every
+downloaded file as current, so an entry touches nothing but the store.
+That is enough for a shell entered online since the last `flake.lock`
+bump: the roots below keep everything it needs. A shell never entered,
+or one whose toolchain moved with the lock, still needs the network.
+
+It is not the default because it is the wrong setting online: a lock
+bump would then compile the toolchain instead of downloading it. nix
+turns the network off by itself only when no interface holds a
+non-loopback address, which any virtual interface that stays up without
+an uplink defeats, so the flag has to be passed when the machine is
+offline.
 
 ## Shells
 
@@ -62,7 +78,7 @@ entered pins one toolchain until you delete its profile:
 rm ~/.local/state/nix/profiles/devshells/rust*   # then let nix.gc run
 ```
 
-### Flake inputs
+### Flake inputs and bashInteractive
 
 A profile does not root the source trees the flake is evaluated from, so
 a collection would take nixpkgs. The eval cache would skip the evaluation
@@ -70,11 +86,16 @@ altogether, but it is keyed on a flake fingerprint, which a checkout with
 uncommitted changes has none of, and this one carries them by design
 (see "App state" in the README).
 
+Nor does it root `bashInteractive`: `nix develop` realises that package
+from the flake's nixpkgs on every entry, for the shell it spawns, and no
+closure here contains it. A collection takes it, and the next entry
+downloads it again before the shell starts.
+
 So the flake has a `devshell-inputs` package, a `linkFarm` of those
-trees, and `devshell` builds it with `--out-link
-~/.local/state/nix/gcroots/devshell-inputs` before entering. The link is
-repointed on each entry, so a `flake.lock` bump releases the tree it
-moved off.
+trees and of `bashInteractive`, and `devshell` builds it with
+`--out-link ~/.local/state/nix/gcroots/devshell-inputs` before entering.
+The link is repointed on each entry, so a `flake.lock` bump releases
+what it moved off.
 
 A shell that reads an input other than nixpkgs needs that input added to
 `devshell-inputs` in `flake.nix`.
