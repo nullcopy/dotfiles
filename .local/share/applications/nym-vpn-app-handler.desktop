@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=NymVPN
-Exec=/usr/bin/nym-vpn-app %u
-Terminal=false
-MimeType=x-scheme-handler/nymvpn
-NoDisplay=true
