@@ -14,6 +14,7 @@ let
   nix = "${nixPackage}/bin/nix --extra-experimental-features 'nix-command flakes'";
 
   flake = config.my.repoPath;
+  entry = config.my.entry;
 
   # The updated lock goes to the runtime dir (%t), not over the
   # checkout's flake.lock: the fetch changes nothing in the working tree.
@@ -41,11 +42,9 @@ in
     Service = {
       Type = "oneshot";
       StateDirectory = "nix/gcroots";
-      # %u@%l is user@hostname with the short hostname, as the entries
-      # in flake.nix are named.
       ExecStart = [
         "${nix} flake update --flake '${flake}' --output-lock-file ${lock}"
-        "${build} '${flake}#homeConfigurations.\"%u@%l\".activationPackage' --out-link ${roots}/home-manager-fetch"
+        "${build} '${flake}#homeConfigurations.\"${entry}\".activationPackage' --out-link ${roots}/home-manager-fetch"
         "${build} '${flake}#fetch-roots' --out-link ${roots}/home-manager-fetch-roots"
       ];
       # The run may have failed on the network or on an evaluation

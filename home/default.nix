@@ -24,6 +24,11 @@
   options.my = {
     desktop.enable = lib.mkEnableOption "graphical desktop config (niri, noctalia, alacritty, GUI apps)";
 
+    entry = lib.mkOption {
+      type = lib.types.str;
+      description = "Name of this home's homeConfigurations entry, set by ../flake.nix.";
+    };
+
     repoPath = lib.mkOption {
       type = lib.types.str;
       default = "${config.home.homeDirectory}/.dotfiles";

@@ -33,19 +33,20 @@
       pkgs = nixpkgs.legacyPackages.${system};
       lib = nixpkgs.lib;
 
+      # The two kinds of machine, as module lists. desktop pairs with
+      # nixos-core's core.desktop.enable.
+      headless = [ ./home ];
+      desktop = headless ++ [ { my.desktop.enable = true; } ];
+
+      # A home knows the entry it was built from (my.entry), so the fetch
+      # timer in home/updates.nix builds that same entry.
       mkHome =
-        modules:
+        name: modules:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = { inherit inputs; };
-          inherit modules;
+          modules = modules ++ [ { my.entry = name; } ];
         };
-
-      # The two kinds of machine. desktop pairs with nixos-core's
-      # core.desktop.enable. A machine entry below is one of these, plus
-      # any modules of its own.
-      headless = [ ./home ];
-      desktop = headless ++ [ { my.desktop.enable = true; } ];
 
       # Shells are auto-discovered from ./devShells/*.nix. mkDevShell sets
       # $SHELL and re-execs into zsh: `nix develop` spawns a bare
@@ -87,13 +88,14 @@
         );
     in
     {
-      # One entry per machine, named "<user>@<hostname>": home-manager and
-      # the fetch timer (home/updates.nix) select it by that name. Machine
-      # specifics go in extra modules, for example
-      #   "nullcopy@fern" = mkHome (headless ++ [ ./hosts/fern.nix ]);
-      homeConfigurations = {
-        "nullcopy@wisp" = mkHome desktop;
-        "nullcopy@aurora" = mkHome desktop;
+      # Applied by type: `home-manager switch --flake <this repo>#headless`
+      # or `#desktop`. A machine with config of its own gets a
+      # "<user>@<hostname>" entry, one of the types plus its modules, which
+      # home-manager selects by hostname with no type on the command line:
+      #   "nullcopy@fern" = headless ++ [ ./hosts/fern.nix ];
+      # With neither a type nor an entry, home-manager fails.
+      homeConfigurations = lib.mapAttrs mkHome {
+        inherit headless desktop;
       };
 
       # One shell per language; enter with `nix develop <flake>#<name>`.

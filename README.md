@@ -10,7 +10,7 @@ system to provide niri + noctalia — on NixOS that is
 ## Layout
 
 ```
-flake.nix              # desktop/headless home types, one entry per machine + devShells
+flake.nix              # headless and desktop homes, machine entries + devShells
 app-state/             # configs apps rewrite (see "App state")
 home/
   default.nix          # entry point: my.* options + CLI baseline (zsh, git, starship)
@@ -26,32 +26,28 @@ doc/                   # longer notes (devshells.md, updates.md)
 
 ## Setup on a new machine
 
-Clone to the canonical path and apply:
+Clone to the canonical path and apply one of the two types:
 
 ```
 git clone git@github.com:nullcopy/dotfiles ~/.dotfiles
-nix run home-manager -- switch --flake ~/.dotfiles
+nix run home-manager -- switch --flake ~/.dotfiles#headless   # CLI only: zsh, git, neovim, devShells
+nix run home-manager -- switch --flake ~/.dotfiles#desktop    # headless plus niri, noctalia, GUI apps
 ```
 
-home-manager picks the `nullcopy@<hostname>` entry automatically. A new
-machine gets one line in `homeConfigurations` in `flake.nix`, as one of
-the two types:
+Later switches name the type too: `home-manager switch --flake
+~/.dotfiles#desktop`. Without one, home-manager looks for a
+`nullcopy@<hostname>` entry and fails when there is none; the type is
+never guessed.
+
+A machine with config of its own gets that entry in `homeConfigurations`
+in `flake.nix`: a type plus its modules, in a file under `hosts/` or
+inline. `my.repoPath` names a checkout outside `~/.dotfiles` so the
+app-state symlinks resolve. home-manager selects the entry by hostname,
+with no type on the command line:
 
 ```nix
-"nullcopy@fern" = mkHome headless;   # CLI only: zsh, git, neovim, devShells
-"nullcopy@mist" = mkHome desktop;    # headless plus niri, noctalia, GUI apps
+"nullcopy@fern" = headless ++ [ ./hosts/fern.nix { my.repoPath = "/srv/dotfiles"; } ];
 ```
-
-Machine specifics are extra modules on the list, in a file under
-`hosts/` or inline; `my.repoPath` names a checkout outside `~/.dotfiles`
-so the app-state symlinks resolve:
-
-```nix
-"nullcopy@fern" = mkHome (headless ++ [ ./hosts/fern.nix { my.repoPath = "/srv/dotfiles"; } ]);
-```
-
-After the first switch, plain `home-manager switch --flake ~/.dotfiles`
-works.
 
 ## App state
 
@@ -81,8 +77,8 @@ garbage collection are covered in [doc/devshells.md](doc/devshells.md).
 ## Day to day
 
 ```
-nix flake update --commit-lock-file     # bump inputs & commit lockfile
-home-manager switch --flake ~/.dotfiles # apply config edits
+nix flake update --commit-lock-file              # bump inputs & commit lockfile
+home-manager switch --flake ~/.dotfiles#<type>   # apply config edits
 ```
 
 A daily timer fetches what the second line would download, so most of
