@@ -7,7 +7,7 @@
 }:
 
 # nullcopy's home environment, applied with standalone home-manager.
-# Per-machine knobs are the `my.*` options, set per entry in ../flake.nix.
+# The `my.*` options are what a machine entry in ../flake.nix can set.
 {
   imports = [
     inputs.nixvim.homeModules.nixvim
@@ -41,6 +41,7 @@
   config = {
     home.username = lib.mkDefault "nullcopy";
     home.homeDirectory = lib.mkDefault "/home/nullcopy";
+    home.stateVersion = "25.11";
 
     # Let home-manager manage itself, so the `home-manager` CLI stays
     # available after the first `nix run home-manager -- switch`.

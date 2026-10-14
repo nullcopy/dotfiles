@@ -10,7 +10,7 @@ system to provide niri + noctalia — on NixOS that is
 ## Layout
 
 ```
-flake.nix              # homeConfigurations."nullcopy@<machine>" per machine + devShells
+flake.nix              # desktop/headless home types, one entry per machine + devShells
 app-state/             # configs apps rewrite (see "App state")
 home/
   default.nix          # entry point: my.* options + CLI baseline (zsh, git, starship)
@@ -33,12 +33,25 @@ git clone git@github.com:nullcopy/dotfiles ~/.dotfiles
 nix run home-manager -- switch --flake ~/.dotfiles
 ```
 
-home-manager picks the `nullcopy@<hostname>` entry automatically; add a
-new machine to `homeConfigurations` in `flake.nix` (set `desktop` per
-machine). After the first switch, plain
-`home-manager switch --flake ~/.dotfiles` works. For a checkout outside
-`~/.dotfiles`, pass `repoPath` in the machine's entry so the
-app-state symlinks resolve.
+home-manager picks the `nullcopy@<hostname>` entry automatically. A new
+machine gets one line in `homeConfigurations` in `flake.nix`, as one of
+the two types:
+
+```nix
+"nullcopy@fern" = mkHome headless;   # CLI only: zsh, git, neovim, devShells
+"nullcopy@mist" = mkHome desktop;    # headless plus niri, noctalia, GUI apps
+```
+
+Machine specifics are extra modules on the list, in a file under
+`hosts/` or inline; `my.repoPath` names a checkout outside `~/.dotfiles`
+so the app-state symlinks resolve:
+
+```nix
+"nullcopy@fern" = mkHome (headless ++ [ ./hosts/fern.nix { my.repoPath = "/srv/dotfiles"; } ]);
+```
+
+After the first switch, plain `home-manager switch --flake ~/.dotfiles`
+works.
 
 ## App state
 

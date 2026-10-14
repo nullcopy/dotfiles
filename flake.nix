@@ -33,30 +33,19 @@
       pkgs = nixpkgs.legacyPackages.${system};
       lib = nixpkgs.lib;
 
-      # One homeConfiguration per machine. desktop pairs with nixos-core's
-      # core.desktop.enable; stateVersion is the HM version at first setup
-      # on that machine; repoPath is the checkout path when it differs
-      # from ~/.dotfiles.
       mkHome =
-        {
-          desktop,
-          stateVersion,
-          repoPath ? null,
-        }:
+        modules:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = { inherit inputs; };
-          modules = [
-            ./home
-            {
-              my.desktop.enable = desktop;
-              home.stateVersion = stateVersion;
-            }
-            # A module of its own: merged into the one above with `//`,
-            # its `my` would replace that one's and drop desktop.enable.
-            (lib.optionalAttrs (repoPath != null) { my.repoPath = repoPath; })
-          ];
+          inherit modules;
         };
+
+      # The two kinds of machine. desktop pairs with nixos-core's
+      # core.desktop.enable. A machine entry below is one of these, plus
+      # any modules of its own.
+      headless = [ ./home ];
+      desktop = headless ++ [ { my.desktop.enable = true; } ];
 
       # Shells are auto-discovered from ./devShells/*.nix. mkDevShell sets
       # $SHELL and re-execs into zsh: `nix develop` spawns a bare
@@ -98,17 +87,13 @@
         );
     in
     {
-      # `home-manager switch --flake <this repo>` auto-selects the
-      # "<user>@<hostname>" entry, so no #attr needed on the command line.
+      # One entry per machine, named "<user>@<hostname>": home-manager and
+      # the fetch timer (home/updates.nix) select it by that name. Machine
+      # specifics go in extra modules, for example
+      #   "nullcopy@fern" = mkHome (headless ++ [ ./hosts/fern.nix ]);
       homeConfigurations = {
-        "nullcopy@wisp" = mkHome {
-          desktop = true;
-          stateVersion = "25.11";
-        };
-        "nullcopy@aurora" = mkHome {
-          desktop = true;
-          stateVersion = "25.11";
-        };
+        "nullcopy@wisp" = mkHome desktop;
+        "nullcopy@aurora" = mkHome desktop;
       };
 
       # One shell per language; enter with `nix develop <flake>#<name>`.
