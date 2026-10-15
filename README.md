@@ -45,6 +45,9 @@ Later switches name the type too: `home-manager switch --flake
 `nullcopy@<hostname>` entry and fails when there is none; the type is
 never guessed.
 
+A machine that has the signing key turns signing on once; see "Commit
+signing" below.
+
 A machine with config of its own gets that entry in `homeConfigurations`
 in `flake.nix`: a type plus its modules, in a file under `hosts/` or
 inline. `my.repoPath` names a checkout outside `~/.dotfiles` so the
@@ -54,6 +57,22 @@ with no type on the command line:
 ```nix
 "nullcopy@fern" = headless ++ [ ./hosts/fern.nix { my.repoPath = "/srv/dotfiles"; } ];
 ```
+
+## Commit signing
+
+Signing is off until a machine turns it on: most machines have no key,
+and a signed commit needs one. A machine with the key opts in once, in
+a git config file outside this repo:
+
+```
+git config --file ~/.config/git/local commit.gpgsign true
+git config --file ~/.config/git/local tag.gpgsign true
+```
+
+`~/.config/git/config` includes that file; git ignores the include while
+the file does not exist. The file holds whatever else differs on this
+machine alone. To stop signing here, delete the file. The choice is
+recorded on the machine, like the home type, and never in this repo.
 
 ## App state
 
