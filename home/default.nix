@@ -236,8 +236,10 @@
           email = "john@coldnoise.net";
         };
         core.editor = "vim";
-        commit.gpgsign = true;
-        tag.gpgsign = true;
+        # The signing key is on the desktops; headless machines commit
+        # unsigned.
+        commit.gpgsign = config.my.desktop.enable;
+        tag.gpgsign = config.my.desktop.enable;
       };
     };
   };
