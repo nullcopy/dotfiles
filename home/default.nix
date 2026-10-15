@@ -17,6 +17,7 @@
     ./opencode.nix
     ./niri.nix
     ./desktop.nix
+    ./ssh.nix
     ./updates.nix
   ];
 

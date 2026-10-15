@@ -18,9 +18,11 @@ home/
   neovim.nix           # nixvim config (AstroNvim-flavoured UX)
   opencode.nix         # opencode pointed at the local ollama service
   desktop.nix          # GUI apps, noctalia, alacritty — my.desktop.enable only
+  ssh.nix              # ssh client, gpg-agent forwarding, authorized keys
   updates.nix          # daily timer that fetches input updates ahead of a switch
   niri.nix             # niri keybindings wired to Noctalia IPC — desktop only
 devShells/             # fallback per-language shells (see "devShells")
+keys/                  # public half of the signing key
 doc/                   # longer notes (devshells.md, updates.md)
 ```
 
@@ -48,6 +50,15 @@ with no type on the command line:
 ```nix
 "nullcopy@fern" = headless ++ [ ./hosts/fern.nix { my.repoPath = "/srv/dotfiles"; } ];
 ```
+
+## Signing over ssh
+
+An ssh login as `nullcopy` forwards the local gpg-agent, so `git commit`
+on the remote machine signs with the key plugged into this one. The
+remote runs nixos-core (sshd allows the forwarded socket) and this home
+(the public key is in its keyring). A machine without a key or a
+forwarded agent fails to commit; `git commit --no-gpg-sign` is the
+deliberate exception.
 
 ## App state
 
