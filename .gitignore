@@ -6,22 +6,3 @@
 **/*.env
 .ssh/
 .gnupg/
-
-
-# Manual ignores
-.config/kde.org/*
-.config/dconf/
-.config/go/
-.config/baloofileinformationrc
-.config/filetypesrc
-.config/session
-.config/trashrc
-.config/kwalletrc
-.config/QtProject.conf
-.config/pulse
-.config/systemd
-.config/joplin-desktop/
-.config/GIMP/
-.config/BraveSoftware
-.config/kiorc
-.gitconfig
