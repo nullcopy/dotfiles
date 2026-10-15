@@ -33,13 +33,12 @@
       pkgs = nixpkgs.legacyPackages.${system};
       lib = nixpkgs.lib;
 
-      # The two kinds of machine, as module lists. desktop pairs with
-      # nixos-core's core.desktop.enable.
-      headless = [ ./home ];
-      desktop = headless ++ [ { my.desktop.enable = true; } ];
+      # The two kinds of machine, as module lists; see ./profiles.
+      headless = [ ./profiles/headless.nix ];
+      desktop = [ ./profiles/desktop.nix ];
 
       # A home knows the entry it was built from (my.entry), so the fetch
-      # timer in home/updates.nix builds that same entry.
+      # timer in modules/updates.nix builds that same entry.
       mkHome =
         name: modules:
         home-manager.lib.homeManagerConfiguration {
@@ -120,7 +119,7 @@
           }
         ];
 
-        # What the daily fetch (home/updates.nix) builds and roots next to
+        # What the daily fetch (modules/updates.nix) builds and roots next to
         # the generation: every devShell, the bashInteractive an entry
         # realises, and the source tree of every input, which no closure
         # includes.

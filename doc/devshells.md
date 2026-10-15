@@ -10,7 +10,7 @@ devshell --offline rust    # enter one without a network
 devshell --help            # options and the list of shells
 ```
 
-`devshell` is a zsh function defined in `home/default.nix`.
+`devshell` is a zsh function defined in `modules/devshell.nix`.
 
 ## Offline
 
@@ -44,7 +44,7 @@ a `pkgs.mkShell`.
 ## Editor tooling
 
 nvim installs no language server and no formatter, for any language.
-`home/neovim.nix` sets `package = null` on every server it configures,
+`modules/neovim.nix` sets `package = null` on every server it configures,
 so nvim runs whatever `clangd`, `gopls` or `rust-analyzer` is on `PATH`,
 and the home closure carries none of them. A server or formatter that is
 not on `PATH` does not run.
@@ -70,7 +70,7 @@ entry, so the toolchain moves only when `flake.lock` does.
 
 The profiles sit under the per-user profile directory that
 `nix-collect-garbage` scans, so the weekly `nix.gc` user timer (in
-`home/default.nix`) prunes generations older than 30 days. The current
+`modules/default.nix`) prunes generations older than 30 days. The current
 generation of each profile is never collected, so every shell you have
 entered pins one toolchain until you delete its profile:
 

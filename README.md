@@ -2,8 +2,8 @@
 
 nullcopy's home environment, applied with **standalone
 [home-manager](https://github.com/nix-community/home-manager)**. Works on
-any Linux with Nix. The desktop half (`desktop = true`) expects the
-system to provide niri + noctalia — on NixOS that is
+any Linux with Nix. The desktop type expects the system to provide
+niri + noctalia — on NixOS that is
 [nixos-core](https://github.com/nullcopy/nixos-core)'s
 `core.desktop.enable`.
 
@@ -12,14 +12,20 @@ system to provide niri + noctalia — on NixOS that is
 ```
 flake.nix              # headless and desktop homes, machine entries + devShells
 app-state/             # configs apps rewrite (see "App state")
-home/
-  default.nix          # entry point: my.* options + CLI baseline (zsh, git, starship)
+profiles/              # the two types, as lists of modules
+  headless.nix         # CLI only: modules/
+  desktop.nix          # headless plus modules/desktop.nix and modules/niri.nix
+modules/               # one module per concern
+  default.nix          # imports the always-on modules; my.* options, identity, base packages, nix.gc
+  zsh.nix              # zsh and starship
   aliases.nix          # zsh + oh-my-zsh-style git aliases
+  devshell.nix         # the `devshell` zsh function (see "devShells")
+  git.nix              # git, gpg, gwt
   neovim.nix           # nixvim config (AstroNvim-flavoured UX)
   opencode.nix         # opencode pointed at the local ollama service
-  desktop.nix          # GUI apps, noctalia, alacritty — my.desktop.enable only
-  updates.nix          # daily timer that fetches input updates ahead of a switch
+  desktop.nix          # GUI apps, noctalia, alacritty — desktop only
   niri.nix             # niri keybindings wired to Noctalia IPC — desktop only
+  updates.nix          # daily timer that fetches input updates ahead of a switch
 devShells/             # fallback per-language shells (see "devShells")
 doc/                   # longer notes (devshells.md, updates.md)
 ```

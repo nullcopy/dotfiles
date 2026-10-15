@@ -21,7 +21,7 @@ When you update, the inputs have moved by a day at most, and nearly
 every path the switch needs is in the store.
 
 The service runs three nix commands and nothing else
-(`home/updates.nix`):
+(`modules/updates.nix`):
 
 ```
 nix flake update --flake ~/.dotfiles --output-lock-file <lock>
