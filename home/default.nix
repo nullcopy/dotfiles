@@ -7,7 +7,7 @@
 }:
 
 # nullcopy's home environment, applied with standalone home-manager.
-# Per-machine knobs are the `my.*` options, set per entry in ../flake.nix.
+# The `my.*` options are what a machine entry in ../flake.nix can set.
 {
   imports = [
     inputs.nixvim.homeModules.nixvim
@@ -23,6 +23,11 @@
   ## ----- per-machine options ---------------------------------------------------
   options.my = {
     desktop.enable = lib.mkEnableOption "graphical desktop config (niri, noctalia, alacritty, GUI apps)";
+
+    entry = lib.mkOption {
+      type = lib.types.str;
+      description = "Name of this home's homeConfigurations entry, set by ../flake.nix.";
+    };
 
     repoPath = lib.mkOption {
       type = lib.types.str;
@@ -41,6 +46,7 @@
   config = {
     home.username = lib.mkDefault "nullcopy";
     home.homeDirectory = lib.mkDefault "/home/nullcopy";
+    home.stateVersion = "25.11";
 
     # Let home-manager manage itself, so the `home-manager` CLI stays
     # available after the first `nix run home-manager -- switch`.

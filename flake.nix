@@ -33,29 +33,19 @@
       pkgs = nixpkgs.legacyPackages.${system};
       lib = nixpkgs.lib;
 
-      # One homeConfiguration per machine. desktop pairs with nixos-core's
-      # core.desktop.enable; stateVersion is the HM version at first setup
-      # on that machine; repoPath is the checkout path when it differs
-      # from ~/.dotfiles.
+      # The two kinds of machine, as module lists. desktop pairs with
+      # nixos-core's core.desktop.enable.
+      headless = [ ./home ];
+      desktop = headless ++ [ { my.desktop.enable = true; } ];
+
+      # A home knows the entry it was built from (my.entry), so the fetch
+      # timer in home/updates.nix builds that same entry.
       mkHome =
-        {
-          desktop,
-          stateVersion,
-          repoPath ? null,
-        }:
+        name: modules:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = { inherit inputs; };
-          modules = [
-            ./home
-            {
-              my.desktop.enable = desktop;
-              home.stateVersion = stateVersion;
-            }
-            # A module of its own: merged into the one above with `//`,
-            # its `my` would replace that one's and drop desktop.enable.
-            (lib.optionalAttrs (repoPath != null) { my.repoPath = repoPath; })
-          ];
+          modules = modules ++ [ { my.entry = name; } ];
         };
 
       # Shells are auto-discovered from ./devShells/*.nix. mkDevShell sets
@@ -98,17 +88,14 @@
         );
     in
     {
-      # `home-manager switch --flake <this repo>` auto-selects the
-      # "<user>@<hostname>" entry, so no #attr needed on the command line.
-      homeConfigurations = {
-        "nullcopy@wisp" = mkHome {
-          desktop = true;
-          stateVersion = "25.11";
-        };
-        "nullcopy@aurora" = mkHome {
-          desktop = true;
-          stateVersion = "25.11";
-        };
+      # Applied by type: `home-manager switch --flake <this repo>#headless`
+      # or `#desktop`. A machine with config of its own gets a
+      # "<user>@<hostname>" entry, one of the types plus its modules, which
+      # home-manager selects by hostname with no type on the command line:
+      #   "nullcopy@fern" = headless ++ [ ./hosts/fern.nix ];
+      # With neither a type nor an entry, home-manager fails.
+      homeConfigurations = lib.mapAttrs mkHome {
+        inherit headless desktop;
       };
 
       # One shell per language; enter with `nix develop <flake>#<name>`.
