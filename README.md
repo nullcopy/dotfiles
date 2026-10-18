@@ -10,9 +10,10 @@ niri + noctalia — on NixOS that is
 ## Layout
 
 ```
-flake.nix              # headless and desktop homes, machine entries + devShells
+flake.nix              # homeConfigurations."<user>@<host>" per machine + devShells
 app-state/             # configs apps rewrite (see "App state")
-profiles/              # the two types, as lists of modules
+hosts/                 # host-specific configs, one module per machine
+profiles/              # the two types
   headless.nix         # CLI only: modules/
   desktop.nix          # headless plus modules/desktop.nix and modules/niri.nix
 modules/               # one module per concern
@@ -32,31 +33,43 @@ doc/                   # longer notes (devshells.md, updates.md)
 
 ## Setup on a new machine
 
-Clone to the canonical path and apply one of the two types:
+Every machine has a `<user>@<hostname>` entry in `homeConfigurations`
+in `flake.nix`, pointing at its module under `hosts/`:
+
+```nix
+"nullcopy@oak" = ./hosts/oak.nix;
+```
+
+The module imports one of the two types, `profiles/headless.nix` (CLI
+only: zsh, git, neovim, devShells) or `profiles/desktop.nix` (headless
+plus niri, noctalia, GUI apps), and holds whatever the machine alone
+gets: packages, program settings, or `my.repoPath` for a checkout
+outside `~/.dotfiles` so the app-state symlinks resolve.
+
+```nix
+# hosts/oak.nix
+{ pkgs, ... }:
+{
+  imports = [ ../profiles/headless.nix ];
+  home.packages = with pkgs; [ htop ];
+  my.repoPath = "/srv/dotfiles";
+}
+```
+
+Then clone to the canonical path and apply:
 
 ```
 git clone git@github.com:nullcopy/dotfiles ~/.dotfiles
-nix run home-manager -- switch --flake ~/.dotfiles#headless   # CLI only: zsh, git, neovim, devShells
-nix run home-manager -- switch --flake ~/.dotfiles#desktop    # headless plus niri, noctalia, GUI apps
+nix run home-manager -- switch --flake ~/.dotfiles
 ```
 
-Later switches name the type too: `home-manager switch --flake
-~/.dotfiles#desktop`. Without one, home-manager looks for a
-`nullcopy@<hostname>` entry and fails when there is none; the type is
-never guessed.
+home-manager selects the entry by hostname, so no attribute goes on
+the command line. On a host with no entry it fails; nothing is applied
+by guess. After the first switch, plain
+`home-manager switch --flake ~/.dotfiles` works.
 
 A machine that has the signing key turns signing on once; see "Commit
 signing" below.
-
-A machine with config of its own gets that entry in `homeConfigurations`
-in `flake.nix`: a type plus its modules, in a file under `hosts/` or
-inline. `my.repoPath` names a checkout outside `~/.dotfiles` so the
-app-state symlinks resolve. home-manager selects the entry by hostname,
-with no type on the command line:
-
-```nix
-"nullcopy@fern" = headless ++ [ ./hosts/fern.nix { my.repoPath = "/srv/dotfiles"; } ];
-```
 
 ## Commit signing
 
@@ -72,7 +85,7 @@ git config --file ~/.config/git/local tag.gpgsign true
 `~/.config/git/config` includes that file; git ignores the include while
 the file does not exist. The file holds whatever else differs on this
 machine alone. To stop signing here, delete the file. The choice is
-recorded on the machine, like the home type, and never in this repo.
+recorded on the machine and never in this repo.
 
 ## App state
 
@@ -102,8 +115,8 @@ garbage collection are covered in [doc/devshells.md](doc/devshells.md).
 ## Day to day
 
 ```
-nix flake update --commit-lock-file              # bump inputs & commit lockfile
-home-manager switch --flake ~/.dotfiles#<type>   # apply config edits
+nix flake update --commit-lock-file     # bump inputs & commit lockfile
+home-manager switch --flake ~/.dotfiles # apply config edits
 ```
 
 A daily timer fetches what the second line would download, so most of
