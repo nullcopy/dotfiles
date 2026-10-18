@@ -4,6 +4,9 @@
 {
   imports = [ ../profiles/headless.nix ];
 
-  home.packages = with pkgs; [ claude-code ];
   nixpkgs.config.allowUnfree = true;
+  home.packages = with pkgs; [
+    claude-code
+    gh
+  ];
 }
