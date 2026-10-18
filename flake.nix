@@ -33,18 +33,18 @@
       pkgs = nixpkgs.legacyPackages.${system};
       lib = nixpkgs.lib;
 
-      # The two kinds of machine, as module lists; see ./profiles.
-      headless = [ ./profiles/headless.nix ];
-      desktop = [ ./profiles/desktop.nix ];
-
-      # A home knows the entry it was built from (my.entry), so the fetch
-      # timer in modules/updates.nix builds that same entry.
+      # A home from its machine's module in ./hosts. It knows the entry it
+      # was built from (my.entry), so the fetch timer in modules/updates.nix
+      # builds that same entry.
       mkHome =
-        name: modules:
+        name: host:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = { inherit inputs; };
-          modules = modules ++ [ { my.entry = name; } ];
+          modules = [
+            host
+            { my.entry = name; }
+          ];
         };
 
       # Shells are auto-discovered from ./devShells/*.nix. mkDevShell sets
@@ -87,14 +87,13 @@
         );
     in
     {
-      # Applied by type: `home-manager switch --flake <this repo>#headless`
-      # or `#desktop`. A machine with config of its own gets a
-      # "<user>@<hostname>" entry, one of the types plus its modules, which
-      # home-manager selects by hostname with no type on the command line:
-      #   "nullcopy@fern" = headless ++ [ ./hosts/fern.nix ];
-      # With neither a type nor an entry, home-manager fails.
+      # One "<user>@<hostname>" entry per machine, which home-manager
+      # selects by hostname: `home-manager switch --flake <this repo>`,
+      # with no attribute. On a host with no entry it fails; nothing is
+      # applied by guess.
       homeConfigurations = lib.mapAttrs mkHome {
-        inherit headless desktop;
+        "nullcopy@aurora" = ./hosts/aurora.nix;
+        "nullcopy@obelisk" = ./hosts/obelisk.nix;
       };
 
       # One shell per language; enter with `nix develop <flake>#<name>`.

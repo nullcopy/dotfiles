@@ -3,13 +3,13 @@
 ## Updating
 
 ```
-nix flake update && home-manager switch --flake ~/.dotfiles#<type>
+nix flake update && home-manager switch --flake ~/.dotfiles
 ```
 
 To see what that would download before switching:
 
 ```
-nix flake update && home-manager build -n --flake ~/.dotfiles#<type>
+nix flake update && home-manager build -n --flake ~/.dotfiles
 ```
 
 ## Background fetch
@@ -44,8 +44,8 @@ nix build ~/.dotfiles#fetch-roots \
   replaces it.
 - An interrupted fetch keeps every path it finished. The next run
   downloads the rest.
-- `<entry>` is the entry this home was built from: `headless`,
-  `desktop`, or the machine's own `<user>@<host>` entry.
+- `<entry>` is the machine's `<user>@<host>` entry, the one this home
+  was built from.
 
 A failed run is tried again after 30 minutes, twice. systemd allows the
 service three starts in six hours, manual ones included, and refuses a

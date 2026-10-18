@@ -9,7 +9,7 @@
 # nullcopy's home environment, applied with standalone home-manager:
 # what every machine gets. ../profiles/headless.nix imports this
 # directory; ../profiles/desktop.nix adds ./desktop.nix and ./niri.nix.
-# The `my.*` options are what a machine entry in ../flake.nix can set.
+# The `my.*` options are what a machine's module in ../hosts can set.
 {
   imports = [
     inputs.nixvim.homeModules.nixvim
