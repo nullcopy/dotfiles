@@ -109,9 +109,15 @@ checkout:
 
 ```
 echo 'use flake' > .envrc
-echo .envrc >> .git/info/exclude    # unless the project commits one
+echo .envrc >> "$(git rev-parse --git-path info/exclude)"
 direnv allow
 ```
+
+The exclude line keeps `.envrc` out of `git status`; skip it in a
+project that commits one. `--git-path` finds the file in a linked
+worktree too, where `.git` is a file, and resolves to the main
+repository's `info/exclude`, which every worktree shares, so it is
+needed once per repository.
 
 The shell loads into the current zsh on `cd` and unloads on leaving it.
 nix-direnv keeps the evaluated shell in `.direnv/` and registers it and
