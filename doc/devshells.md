@@ -99,3 +99,41 @@ what it moved off.
 
 A shell that reads an input other than nixpkgs needs that input added to
 `devshell-inputs` in `flake.nix`.
+
+## Project flakes
+
+A project with its own flake does not need a shell here: direnv loads
+the project's shell instead, with the same protection from the
+collector. `modules/direnv.nix` enables direnv and nix-direnv. In the
+checkout:
+
+```
+echo 'use flake' > .envrc
+echo .envrc >> .git/info/exclude    # unless the project commits one
+direnv allow
+```
+
+The shell loads into the current zsh on `cd` and unloads on leaving it.
+nix-direnv keeps the evaluated shell in `.direnv/` and registers it and
+the flake's inputs as GC roots, so neither the weekly user collector nor
+a system one deletes the toolchain. A later entry reads the cached
+environment instead of evaluating the flake, until `flake.nix`,
+`flake.lock` or `.envrc` changes; if that evaluation fails, the last
+working environment stays loaded.
+
+The roots live in each checkout's `.direnv/`, so every worktree with an
+`.envrc` holds one (the same store paths, so no extra disk), and a
+checkout holds its toolchain until its `.direnv/` is deleted. To find
+stale ones:
+
+```
+nix-store --gc --print-roots | grep /.direnv/
+```
+
+A project without a flake can load a shell from here the same way, with
+`use flake ~/.dotfiles#rust` in its `.envrc`. The zsh re-exec in
+`flake.nix` stays out of direnv runs (`DIRENV_IN_ENVRC`); without that
+guard the hook would start a nested zsh and hang the prompt.
+
+Only an interactive zsh runs the hook. A command run from elsewhere
+(a script, an agent) gets the environment with `direnv exec . <cmd>`.
