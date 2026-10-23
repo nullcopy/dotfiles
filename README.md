@@ -43,8 +43,7 @@ in `flake.nix`, pointing at its module under `hosts/`:
 The module imports one of the two types, `profiles/headless.nix` (CLI
 only: zsh, git, neovim, devShells) or `profiles/desktop.nix` (headless
 plus niri, noctalia, GUI apps), and holds whatever the machine alone
-gets: packages, program settings, or `my.repoPath` for a checkout
-outside `~/.dotfiles` so the app-state symlinks resolve.
+gets: packages and program settings.
 
 ```nix
 # hosts/oak.nix
@@ -52,21 +51,33 @@ outside `~/.dotfiles` so the app-state symlinks resolve.
 {
   imports = [ ../profiles/headless.nix ];
   home.packages = with pkgs; [ htop ];
-  my.repoPath = "/srv/dotfiles";
 }
 ```
 
-Then clone to the canonical path and apply:
+Then clone anywhere, link the checkout to `~/.config/home-manager`,
+and apply:
 
 ```
-git clone git@github.com:nullcopy/dotfiles ~/.dotfiles
-nix run home-manager -- switch --flake ~/.dotfiles
+git clone git@github.com:nullcopy/dotfiles ~/src/dotfiles
+ln -sfn ~/src/dotfiles ~/.config/home-manager
+nix run home-manager -- switch --flake ~/.config/home-manager
 ```
 
 home-manager selects the entry by hostname, so no attribute goes on
 the command line. On a host with no entry it fails; nothing is applied
-by guess. After the first switch, plain
-`home-manager switch --flake ~/.dotfiles` works.
+by guess. After the first switch, plain `home-manager switch` works:
+with no `--flake` it uses `~/.config/home-manager`.
+
+The link is the one thing that knows where the checkout lives
+(`my.repoPath`, see "App state"). To move the checkout, move it and
+repoint the link; no switch is needed:
+
+```
+mv ~/src/dotfiles ~/elsewhere/dotfiles
+ln -sfn ~/elsewhere/dotfiles ~/.config/home-manager
+```
+
+A switch warns when the link is missing or dangling.
 
 A machine that has the signing key turns signing on once; see "Commit
 signing" below.
@@ -92,7 +103,8 @@ recorded on the machine and never in this repo.
 Apps that rewrite their own config keep their file in `app-state/`,
 linked out-of-store into place: the file in the working tree **is** the
 live file. A change in the app shows up as an unstaged diff; commit it
-to persist.
+to persist. The links go through `~/.config/home-manager`, so they
+follow the checkout wherever that link points.
 
 - `app-state/noctalia/settings.toml` → `~/.local/state/noctalia/settings.toml`
   (everything the v5 settings UI writes)
@@ -116,7 +128,7 @@ garbage collection are covered in [doc/devshells.md](doc/devshells.md).
 
 ```
 nix flake update --commit-lock-file     # bump inputs & commit lockfile
-home-manager switch --flake ~/.dotfiles # apply config edits
+home-manager switch                     # apply config edits
 ```
 
 A daily timer fetches what the second line would download, so most of

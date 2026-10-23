@@ -31,12 +31,18 @@
 
     repoPath = lib.mkOption {
       type = lib.types.str;
-      default = "${config.home.homeDirectory}/.dotfiles";
+      default = "${config.xdg.configHome}/home-manager";
       description = ''
-        Absolute path to this repo's checkout on this machine. Apps that
-        rewrite their own config files (noctalia) get an out-of-store symlink
-        into this checkout, so in-app changes land as unstaged git diffs here
-        — commit them to persist.
+        Absolute path that leads to this repo's checkout on this machine.
+        Apps that rewrite their own config files (noctalia) get an
+        out-of-store symlink into this checkout, so in-app changes land as
+        unstaged git diffs here — commit them to persist.
+
+        The default is a symlink the machine creates once, pointing at
+        wherever the checkout lives (see the README). Nothing reads the
+        path until runtime, so moving the checkout means repointing the
+        symlink, with no rebuild. It is also where home-manager looks for
+        a flake when switch is given no --flake.
       '';
     };
   };
@@ -49,6 +55,15 @@
     # Let home-manager manage itself, so the `home-manager` CLI stays
     # available after the first `nix run home-manager -- switch`.
     programs.home-manager.enable = true;
+
+    # Everything built on my.repoPath fails quietly when it leads
+    # nowhere: dangling app-state links, a skipped fetch timer. Say so
+    # at switch time instead.
+    home.activation.checkRepoPath = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      if [[ ! -e ${lib.escapeShellArg "${config.my.repoPath}/flake.nix"} ]]; then
+        warnEcho ${lib.escapeShellArg "my.repoPath (${config.my.repoPath}) does not lead to this repo's checkout; run: ln -sfn <checkout> ${config.my.repoPath}"}
+      fi
+    '';
 
     ## ----- packages ------------------------------------------------------------
     # CLI-only here; GUI packages live in desktop.nix.
