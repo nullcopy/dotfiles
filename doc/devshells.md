@@ -104,20 +104,30 @@ A shell that reads an input other than nixpkgs needs that input added to
 
 A project with its own flake does not need a shell here: direnv loads
 the project's shell instead, with the same protection from the
-collector. `modules/direnv.nix` enables direnv and nix-direnv. In the
-checkout:
+collector. `modules/direnv.nix` enables direnv and nix-direnv.
+
+There is nothing to set up per project. On `cd` into the top of a git
+checkout that has a `flake.nix` and no `.envrc`, zsh asks once:
 
 ```
-echo 'use flake' > .envrc
-echo .envrc >> "$(git rev-parse --git-path info/exclude)"
-direnv allow
+direnv: load this repository's flake dev shell? [y/N]
 ```
 
-The exclude line keeps `.envrc` out of `git status`; skip it in a
-project that commits one. `--git-path` finds the file in a linked
-worktree too, where `.git` is a file, and resolves to the main
-repository's `info/exclude`, which every worktree shares, so it is
-needed once per repository.
+Loading a flake's shell runs the project's code (its shell hook), so
+this is a trust decision about the repository, and the answer is kept
+in the repository's git config, `direnv.flake`, which all its worktrees
+share. On yes, zsh writes `.envrc` (`use flake`) and runs `direnv allow`,
+and does the same without asking in each new worktree of the
+repository. On no, it never asks there again. To be asked again:
+
+```
+git config --unset direnv.flake
+```
+
+`.envrc` and `.direnv/` are in the global git ignore, so neither shows
+in `git status`. A project that tracks its own `.envrc` is unaffected
+(ignores only hide untracked files), and the prompt does not appear
+there, since the file exists; direnv itself asks for `direnv allow`.
 
 The shell loads into the current zsh on `cd` and unloads on leaving it.
 nix-direnv keeps the evaluated shell in `.direnv/` and registers it and
