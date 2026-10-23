@@ -3,13 +3,13 @@
 ## Updating
 
 ```
-nix flake update && home-manager switch --flake ~/.dotfiles
+nix flake update && home-manager switch
 ```
 
 To see what that would download before switching:
 
 ```
-nix flake update && home-manager build -n --flake ~/.dotfiles
+nix flake update && home-manager build -n
 ```
 
 ## Background fetch
@@ -24,10 +24,10 @@ The service runs three nix commands and nothing else
 (`modules/updates.nix`):
 
 ```
-nix flake update --flake ~/.dotfiles --output-lock-file <lock>
-nix build ~/.dotfiles#homeConfigurations."<entry>".activationPackage \
+nix flake update --flake ~/.config/home-manager --output-lock-file <lock>
+nix build ~/.config/home-manager#homeConfigurations."<entry>".activationPackage \
   --reference-lock-file <lock> --no-write-lock-file --out-link <link>
-nix build ~/.dotfiles#fetch-roots \
+nix build ~/.config/home-manager#fetch-roots \
   --reference-lock-file <lock> --no-write-lock-file --out-link <link>-roots
 ```
 
