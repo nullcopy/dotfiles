@@ -15,7 +15,7 @@ app-state/             # configs apps rewrite (see "App state")
 hosts/                 # host-specific configs, one module per machine
 profiles/              # the two types
   headless.nix         # CLI only: modules/
-  desktop.nix          # headless plus modules/desktop.nix and modules/niri.nix; my.keyring
+  desktop.nix          # headless plus modules/desktop.nix, niri.nix and mail.nix
 modules/               # one module per concern
   default.nix          # imports the always-on modules; my.* options, identity, base packages, nix.gc
   zsh.nix              # zsh and starship
@@ -26,7 +26,7 @@ modules/               # one module per concern
   opencode.nix         # opencode pointed at the local ollama service
   desktop.nix          # GUI apps, noctalia, alacritty — desktop only
   niri.nix             # niri keybindings wired to Noctalia IPC — desktop only
-  mail.nix             # aerc everywhere; the account where my.keyring holds its password
+  mail.nix             # aerc, password from the GNOME keyring — desktop only
   updates.nix          # daily timer that fetches input updates ahead of a switch
 devShells/             # fallback per-language shells (see "devShells")
 doc/                   # longer notes (devshells.md, updates.md)
@@ -43,7 +43,7 @@ in `flake.nix`, pointing at its module under `hosts/`:
 
 The module imports one of the two types, `profiles/headless.nix` (CLI
 only: zsh, git, neovim, devShells) or `profiles/desktop.nix` (headless
-plus niri, noctalia, GUI apps), and holds whatever the machine alone
+plus niri, noctalia, GUI apps, aerc), and holds whatever the machine alone
 gets: packages, program settings, or `my.repoPath` for a checkout
 outside `~/.dotfiles` so the app-state symlinks resolve.
 
@@ -90,9 +90,8 @@ recorded on the machine and never in this repo.
 
 ## Mail
 
-`modules/mail.nix` installs aerc on every machine and declares the
-account on those with `my.keyring = true` (the desktop type). There
-the generated `accounts.conf` holds no password: aerc runs
+aerc is declared in `modules/mail.nix` (desktop type only). Its
+`accounts.conf` is generated and holds no password: aerc runs
 `secret-tool lookup` against the GNOME keyring, which nixos-core's
 `core.desktop.enable` runs and unlocks at login. Store the password
 once per machine, before the first start:
@@ -111,11 +110,6 @@ home-manager switch --flake ~/.dotfiles
 ```
 
 and delete `~/.config/aerc.wizard` once aerc connects.
-
-A headless machine has no keyring, so it gets the client and no
-account; aerc offers its wizard there, which stores the password in
-clear text on that machine. Set `my.keyring` only where a secret
-service really runs.
 
 ## App state
 

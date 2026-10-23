@@ -18,7 +18,6 @@
     ./aliases.nix
     ./devshell.nix
     ./git.nix
-    ./mail.nix
     ./neovim.nix
     ./opencode.nix
     ./updates.nix
