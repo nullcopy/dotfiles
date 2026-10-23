@@ -99,3 +99,57 @@ what it moved off.
 
 A shell that reads an input other than nixpkgs needs that input added to
 `devshell-inputs` in `flake.nix`.
+
+## Project flakes
+
+A project with its own flake does not need a shell here: direnv loads
+the project's shell instead, with the same protection from the
+collector. `modules/direnv.nix` enables direnv and nix-direnv.
+
+There is nothing to set up per project. On `cd` into the top of a git
+checkout that has a `flake.nix` and no `.envrc`, zsh asks once:
+
+```
+direnv: load this repository's flake dev shell? [y/N]
+```
+
+Loading a flake's shell runs the project's code (its shell hook), so
+this is a trust decision about the repository, and the answer is kept
+in the repository's git config, `direnv.flake`, which all its worktrees
+share. On yes, zsh writes `.envrc` (`use flake`) and runs `direnv allow`,
+and does the same without asking in each new worktree of the
+repository. On no, it never asks there again. To be asked again:
+
+```
+git config --unset direnv.flake
+```
+
+`.envrc` and `.direnv/` are in the global git ignore, so neither shows
+in `git status`. A project that tracks its own `.envrc` is unaffected
+(ignores only hide untracked files), and the prompt does not appear
+there, since the file exists; direnv itself asks for `direnv allow`.
+
+The shell loads into the current zsh on `cd` and unloads on leaving it.
+nix-direnv keeps the evaluated shell in `.direnv/` and registers it and
+the flake's inputs as GC roots, so neither the weekly user collector nor
+a system one deletes the toolchain. A later entry reads the cached
+environment instead of evaluating the flake, until `flake.nix`,
+`flake.lock` or `.envrc` changes; if that evaluation fails, the last
+working environment stays loaded.
+
+The roots live in each checkout's `.direnv/`, so every worktree with an
+`.envrc` holds one (the same store paths, so no extra disk), and a
+checkout holds its toolchain until its `.direnv/` is deleted. To find
+stale ones:
+
+```
+nix-store --gc --print-roots | grep /.direnv/
+```
+
+A project without a flake can load a shell from here the same way, with
+`use flake ~/.dotfiles#rust` in its `.envrc`. The zsh re-exec in
+`flake.nix` stays out of direnv runs (`DIRENV_IN_ENVRC`); without that
+guard the hook would start a nested zsh and hang the prompt.
+
+Only an interactive zsh runs the hook. A command run from elsewhere
+(a script, an agent) gets the environment with `direnv exec . <cmd>`.

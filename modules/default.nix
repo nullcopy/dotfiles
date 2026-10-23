@@ -17,6 +17,7 @@
     ./zsh.nix
     ./aliases.nix
     ./devshell.nix
+    ./direnv.nix
     ./git.nix
     ./neovim.nix
     ./opencode.nix
