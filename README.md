@@ -15,7 +15,7 @@ app-state/             # configs apps rewrite (see "App state")
 hosts/                 # host-specific configs, one module per machine
 profiles/              # the two types
   headless.nix         # CLI only: modules/
-  desktop.nix          # headless plus modules/desktop.nix and modules/niri.nix
+  desktop.nix          # headless plus modules/desktop.nix, niri.nix and mail.nix
 modules/               # one module per concern
   default.nix          # imports the always-on modules; my.* options, identity, base packages, nix.gc
   aerc.nix             # aerc mail client; accounts stay on the machine
@@ -27,6 +27,7 @@ modules/               # one module per concern
   opencode.nix         # opencode pointed at the local ollama service
   desktop.nix          # GUI apps, noctalia, alacritty — desktop only
   niri.nix             # niri keybindings wired to Noctalia IPC — desktop only
+  mail.nix             # aerc, password from the GNOME keyring — desktop only
   updates.nix          # daily timer that fetches input updates ahead of a switch
 devShells/             # fallback per-language shells (see "devShells")
 doc/                   # longer notes (devshells.md, updates.md)
@@ -43,7 +44,7 @@ in `flake.nix`, pointing at its module under `hosts/`:
 
 The module imports one of the two types, `profiles/headless.nix` (CLI
 only: zsh, git, neovim, devShells) or `profiles/desktop.nix` (headless
-plus niri, noctalia, GUI apps), and holds whatever the machine alone
+plus niri, noctalia, GUI apps, aerc), and holds whatever the machine alone
 gets: packages, program settings, or `my.repoPath` for a checkout
 outside `~/.dotfiles` so the app-state symlinks resolve.
 
@@ -87,6 +88,29 @@ git config --file ~/.config/git/local tag.gpgsign true
 the file does not exist. The file holds whatever else differs on this
 machine alone. To stop signing here, delete the file. The choice is
 recorded on the machine and never in this repo.
+
+## Mail
+
+aerc is declared in `modules/mail.nix` (desktop type only). Its
+`accounts.conf` is generated and holds no password: aerc runs
+`secret-tool lookup` against the GNOME keyring, which nixos-core's
+`core.desktop.enable` runs and unlocks at login. Store the password
+once per machine, before the first start:
+
+```
+secret-tool store --label='aerc john@coldnoise.net' email john@coldnoise.net
+```
+
+If aerc's setup wizard ran before this module was applied, it left
+`~/.config/aerc/accounts.conf` with the password in clear text. The
+switch refuses to overwrite it; move the directory away first:
+
+```
+mv ~/.config/aerc ~/.config/aerc.wizard
+home-manager switch --flake ~/.dotfiles
+```
+
+and delete `~/.config/aerc.wizard` once aerc connects.
 
 ## App state
 
