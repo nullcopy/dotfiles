@@ -14,6 +14,7 @@
   imports = [
     inputs.nixvim.homeModules.nixvim
     inputs.gwt.homeModules.default
+    ./aerc.nix
     ./zsh.nix
     ./aliases.nix
     ./devshell.nix

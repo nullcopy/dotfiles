@@ -18,6 +18,7 @@ profiles/              # the two types
   desktop.nix          # headless plus modules/desktop.nix and modules/niri.nix
 modules/               # one module per concern
   default.nix          # imports the always-on modules; my.* options, identity, base packages, nix.gc
+  aerc.nix             # aerc mail client; accounts stay on the machine
   zsh.nix              # zsh and starship
   aliases.nix          # zsh + oh-my-zsh-style git aliases
   devshell.nix         # the `devshell` zsh function (see "devShells")
