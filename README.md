@@ -21,6 +21,7 @@ modules/               # one module per concern
   zsh.nix              # zsh and starship
   aliases.nix          # zsh + oh-my-zsh-style git aliases
   devshell.nix         # the `devshell` zsh function (see "devShells")
+  direnv.nix           # direnv + nix-direnv for project flakes (see "devShells")
   git.nix              # git, gpg, gwt
   neovim.nix           # nixvim config (AstroNvim-flavoured UX)
   opencode.nix         # opencode pointed at the local ollama service
@@ -109,8 +110,9 @@ devshell rust
 devshell --offline rust    # without a network
 ```
 
-Adding shells, the `all` shell, offline use and how the shells survive
-garbage collection are covered in [doc/devshells.md](doc/devshells.md).
+Adding shells, the `all` shell, offline use, how the shells survive
+garbage collection and direnv for projects with their own flake are
+covered in [doc/devshells.md](doc/devshells.md).
 
 ## Day to day
 
