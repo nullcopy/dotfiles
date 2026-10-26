@@ -32,12 +32,17 @@
 
     repoPath = lib.mkOption {
       type = lib.types.str;
-      default = "${config.home.homeDirectory}/.dotfiles";
+      default = "${config.xdg.configHome}/dotfiles";
       description = ''
-        Absolute path to this repo's checkout on this machine. Apps that
-        rewrite their own config files (noctalia) get an out-of-store symlink
-        into this checkout, so in-app changes land as unstaged git diffs here
-        — commit them to persist.
+        Absolute path that leads to this repo's checkout on this machine.
+        Apps that rewrite their own config files (noctalia) get an
+        out-of-store symlink into this checkout, so in-app changes land as
+        unstaged git diffs here — commit them to persist.
+
+        The default is where setup clones the repo. A checkout elsewhere
+        gets a symlink at the default path instead: nothing reads the path
+        until runtime, so moving the checkout means repointing the symlink,
+        with no rebuild. See ../doc/checkout.md.
       '';
     };
   };
@@ -50,6 +55,17 @@
     # Let home-manager manage itself, so the `home-manager` CLI stays
     # available after the first `nix run home-manager -- switch`.
     programs.home-manager.enable = true;
+
+    # Everything built on my.repoPath fails quietly when it leads
+    # nowhere: noctalia starts over from defaults behind a dangling
+    # app-state link, and the fetch timer skips. So a switch stops
+    # here, before the write boundary, while nothing has changed yet.
+    home.activation.checkRepoPath = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+      if [[ ! -e ${lib.escapeShellArg "${config.my.repoPath}/flake.nix"} ]]; then
+        errorEcho ${lib.escapeShellArg "my.repoPath (${config.my.repoPath}) does not lead to this repo's checkout. Clone the repo there, or link it: ln -sfn <checkout> ${config.my.repoPath}. See doc/checkout.md. Nothing was changed."}
+        exit 1
+      fi
+    '';
 
     ## ----- packages ------------------------------------------------------------
     # CLI-only here; GUI packages live in desktop.nix.

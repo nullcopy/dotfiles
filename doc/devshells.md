@@ -147,7 +147,7 @@ nix-store --gc --print-roots | grep /.direnv/
 ```
 
 A project without a flake can load a shell from here the same way, with
-`use flake ~/.dotfiles#rust` in its `.envrc`. The zsh re-exec in
+`use flake ~/.config/dotfiles#rust` in its `.envrc`. The zsh re-exec in
 `flake.nix` stays out of direnv runs (`DIRENV_IN_ENVRC`); without that
 guard the hook would start a nested zsh and hang the prompt.
 

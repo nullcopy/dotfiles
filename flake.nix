@@ -54,7 +54,8 @@
       # the exec would otherwise hijack, `nix develop --command` included,
       # and out of direnv (DIRENV_IN_ENVRC), which runs the hook inside
       # zsh's prompt hook with the terminal still on stdout: an `.envrc`
-      # with `use flake ~/.dotfiles#rust` would hang on the nested zsh.
+      # with `use flake ~/.config/dotfiles#rust` would hang on the nested
+      # zsh.
       mkDevShell =
         file:
         (import file { inherit pkgs system; }).overrideAttrs (old: {
