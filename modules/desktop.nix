@@ -57,4 +57,13 @@ in
   # writer canonicalises the settings link, so it survives every save.
   home.file.".local/state/noctalia/settings.toml".source = appState "noctalia/settings.toml";
   home.file.".config/noctalia/palettes".source = appState "noctalia/palettes";
+
+  ## ----- noctalia plugins (vendor/) ------------------------------------------
+  # Third-party plugins are vendored and installed from the store, so they
+  # stay read-only and change only through a reviewed commit here: noctalia
+  # does not sandbox plugins, and a git source would auto-update them.
+  # noctalia's built-in "local" source scans <data>/noctalia/plugins/<name>;
+  # plugins keep their own data under ~/.local/state/noctalia instead.
+  # pricebar: github.com/humblemane/pricebar at 0bd8a14 (2.0.0), audited.
+  home.file.".local/share/noctalia/plugins/pricebar".source = ../vendor/noctalia-plugins/pricebar;
 }

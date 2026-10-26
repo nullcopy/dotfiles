@@ -1,0 +1,11 @@
+name: Feature request or new asset
+description: Suggest a feature, or ask for a coin or stock to be added
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like?
+      description: For a new asset, give the name and ticker. See CONTRIBUTING.md for how assets are verified.
+    validations:
+      required: true

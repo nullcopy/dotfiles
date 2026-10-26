@@ -3,6 +3,7 @@ config_version = 13
 [bar.default]
 auto_hide = true
 end = [
+    "humblemane/pricebar:price",
     "tray",
     "media",
     "wallpaper",
@@ -124,10 +125,10 @@ widget_order = [ "lockscreen-login-box@eDP-1", "lockscreen-login-box@HDMI-A-1" ]
 enabled = true
 
 [plugins]
-enabled = []
+enabled = [ "humblemane/pricebar" ]
 
 [shell]
-offline_mode = true
+offline_mode = false
 
     [shell.panel]
     transparency_mode = "soft"

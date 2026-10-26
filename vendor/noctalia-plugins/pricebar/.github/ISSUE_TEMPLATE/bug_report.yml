@@ -1,0 +1,29 @@
+name: Bug report
+description: Something is wrong or missing in the widget
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Include what you expected, and a screenshot if it's visual.
+    validations:
+      required: true
+  - type: input
+    id: asset
+    attributes:
+      label: Asset, currency and timeframe
+      placeholder: "e.g. stock-nvda, EUR, 7d"
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "Output of `noctalia --version`, and this plugin's version from `noctalia msg plugins list`."
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log lines
+      description: "Output of `grep pricebar ~/.cache/noctalia/noctalia.log | tail -30`"
+      render: text
