@@ -51,13 +51,17 @@
       # $SHELL and re-execs into zsh: `nix develop` spawns a bare
       # bashInteractive, which child processes would otherwise inherit.
       # The guard keeps that out of runs with no terminal on stdout, which
-      # the exec would otherwise hijack, `nix develop --command` included.
+      # the exec would otherwise hijack, `nix develop --command` included,
+      # and out of direnv (DIRENV_IN_ENVRC), which runs the hook inside
+      # zsh's prompt hook with the terminal still on stdout: an `.envrc`
+      # with `use flake ~/.config/dotfiles#rust` would hang on the nested
+      # zsh.
       mkDevShell =
         file:
         (import file { inherit pkgs system; }).overrideAttrs (old: {
           shellHook = (old.shellHook or "") + ''
             export SHELL=${pkgs.zsh}/bin/zsh
-            if [ -t 1 ] && [ -z "''${DEVSHELL_NO_EXEC:-}" ]; then
+            if [ -t 1 ] && [ -z "''${DEVSHELL_NO_EXEC:-}" ] && [ -z "''${DIRENV_IN_ENVRC:-}" ]; then
               exec ${pkgs.zsh}/bin/zsh
             fi
           '';
