@@ -101,7 +101,14 @@
       };
 
       # One shell per language; enter with `nix develop <flake>#<name>`.
-      devShells.${system} = lib.genAttrs shellNames (name: mkDevShell (./devShells + "/${name}.nix"));
+      # `default` is the nix shell, for working on this repository: the
+      # `use flake` that modules/direnv.nix writes into its .envrc loads
+      # the default shell, and fails when there is none.
+      devShells.${system} =
+        let
+          shells = lib.genAttrs shellNames (name: mkDevShell (./devShells + "/${name}.nix"));
+        in
+        shells // { default = shells.nix; };
 
       packages.${system} = {
         # What an entry needs besides the shell's closure, as one buildable
