@@ -28,7 +28,7 @@ modules/               # one module per concern
   niri.nix             # niri keybindings wired to Noctalia IPC — desktop only
   updates.nix          # daily timer that fetches input updates ahead of a switch
 devShells/             # fallback per-language shells (see "devShells")
-doc/                   # longer notes (devshells.md, updates.md)
+doc/                   # longer notes (checkout.md, devshells.md, updates.md)
 ```
 
 ## Setup on a new machine
@@ -43,8 +43,7 @@ in `flake.nix`, pointing at its module under `hosts/`:
 The module imports one of the two types, `profiles/headless.nix` (CLI
 only: zsh, git, neovim, devShells) or `profiles/desktop.nix` (headless
 plus niri, noctalia, GUI apps), and holds whatever the machine alone
-gets: packages, program settings, or `my.repoPath` for a checkout
-outside `~/.dotfiles` so the app-state symlinks resolve.
+gets: packages and program settings.
 
 ```nix
 # hosts/oak.nix
@@ -52,21 +51,25 @@ outside `~/.dotfiles` so the app-state symlinks resolve.
 {
   imports = [ ../profiles/headless.nix ];
   home.packages = with pkgs; [ htop ];
-  my.repoPath = "/srv/dotfiles";
 }
 ```
 
-Then clone to the canonical path and apply:
+Then clone to `~/.config/dotfiles` and apply:
 
 ```
-git clone git@github.com:nullcopy/dotfiles ~/.dotfiles
-nix run home-manager -- switch --flake ~/.dotfiles
+git clone git@github.com:nullcopy/dotfiles ~/.config/dotfiles
+nix run home-manager -- switch --flake ~/.config/dotfiles
 ```
 
 home-manager selects the entry by hostname, so no attribute goes on
 the command line. On a host with no entry it fails; nothing is applied
-by guess. After the first switch, plain
-`home-manager switch --flake ~/.dotfiles` works.
+by guess. After the first switch,
+`home-manager switch --flake ~/.config/dotfiles` works.
+
+The checkout can live anywhere else (a `~/src` tree, a bare repo with
+worktrees) behind a symlink at `~/.config/dotfiles`, made before the
+first switch. That, moving a checkout later, and machines still on
+`~/.dotfiles` are covered in [doc/checkout.md](doc/checkout.md).
 
 A machine that has the signing key turns signing on once; see "Commit
 signing" below.
@@ -92,7 +95,8 @@ recorded on the machine and never in this repo.
 Apps that rewrite their own config keep their file in `app-state/`,
 linked out-of-store into place: the file in the working tree **is** the
 live file. A change in the app shows up as an unstaged diff; commit it
-to persist.
+to persist. The links go through `~/.config/dotfiles`, so they follow
+the checkout wherever that path leads.
 
 - `app-state/noctalia/settings.toml` → `~/.local/state/noctalia/settings.toml`
   (everything the v5 settings UI writes)
@@ -115,8 +119,8 @@ garbage collection are covered in [doc/devshells.md](doc/devshells.md).
 ## Day to day
 
 ```
-nix flake update --commit-lock-file     # bump inputs & commit lockfile
-home-manager switch --flake ~/.dotfiles # apply config edits
+nix flake update --commit-lock-file             # bump inputs & commit lockfile
+home-manager switch --flake ~/.config/dotfiles  # apply config edits
 ```
 
 A daily timer fetches what the second line would download, so most of

@@ -31,12 +31,17 @@
 
     repoPath = lib.mkOption {
       type = lib.types.str;
-      default = "${config.home.homeDirectory}/.dotfiles";
+      default = "${config.xdg.configHome}/dotfiles";
       description = ''
-        Absolute path to this repo's checkout on this machine. Apps that
-        rewrite their own config files (noctalia) get an out-of-store symlink
-        into this checkout, so in-app changes land as unstaged git diffs here
-        — commit them to persist.
+        Absolute path that leads to this repo's checkout on this machine.
+        Apps that rewrite their own config files (noctalia) get an
+        out-of-store symlink into this checkout, so in-app changes land as
+        unstaged git diffs here — commit them to persist.
+
+        The default is where setup clones the repo. A checkout elsewhere
+        gets a symlink at the default path instead: nothing reads the path
+        until runtime, so moving the checkout means repointing the symlink,
+        with no rebuild. See ../doc/checkout.md.
       '';
     };
   };
