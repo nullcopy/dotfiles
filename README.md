@@ -69,7 +69,9 @@ by guess. After the first switch,
 The checkout can live anywhere else (a `~/src` tree, a bare repo with
 worktrees) behind a symlink at `~/.config/dotfiles`, made before the
 first switch. That, moving a checkout later, and machines still on
-`~/.dotfiles` are covered in [doc/checkout.md](doc/checkout.md).
+`~/.dotfiles` are covered in [doc/checkout.md](doc/checkout.md). A
+switch with nothing at `~/.config/dotfiles` stops before changing
+anything.
 
 A machine that has the signing key turns signing on once; see "Commit
 signing" below.

@@ -18,7 +18,9 @@ the path instead, all at runtime:
   when `<path>/flake.nix` is missing
 
 If the path leads nowhere, noctalia starts from defaults and the other
-two fail.
+two fail. So a switch checks first: when `<path>/flake.nix` doesn't
+exist, it stops before changing anything and prints the `ln` command
+below.
 
 ## A checkout somewhere else
 

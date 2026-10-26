@@ -55,6 +55,17 @@
     # available after the first `nix run home-manager -- switch`.
     programs.home-manager.enable = true;
 
+    # Everything built on my.repoPath fails quietly when it leads
+    # nowhere: noctalia starts over from defaults behind a dangling
+    # app-state link, and the fetch timer skips. So a switch stops
+    # here, before the write boundary, while nothing has changed yet.
+    home.activation.checkRepoPath = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+      if [[ ! -e ${lib.escapeShellArg "${config.my.repoPath}/flake.nix"} ]]; then
+        errorEcho ${lib.escapeShellArg "my.repoPath (${config.my.repoPath}) does not lead to this repo's checkout. Clone the repo there, or link it: ln -sfn <checkout> ${config.my.repoPath}. See doc/checkout.md. Nothing was changed."}
+        exit 1
+      fi
+    '';
+
     ## ----- packages ------------------------------------------------------------
     # CLI-only here; GUI packages live in desktop.nix.
     home.packages = with pkgs; [
