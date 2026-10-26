@@ -146,6 +146,9 @@ stale ones:
 nix-store --gc --print-roots | grep /.direnv/
 ```
 
+This repository answers the prompt too: its flake's `default` shell is
+`nix` (nil, nixfmt, prettier), which a plain `use flake` loads.
+
 A project without a flake can load a shell from here the same way, with
 `use flake ~/.config/dotfiles#rust` in its `.envrc`. The zsh re-exec in
 `flake.nix` stays out of direnv runs (`DIRENV_IN_ENVRC`); without that
