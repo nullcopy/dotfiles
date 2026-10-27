@@ -1,14 +1,15 @@
 { pkgs, ... }:
 
 # opencode (https://opencode.ai) wired to the machine's local ollama
-# service and to Prime Intellect inference, configured via
-# ~/.config/opencode/opencode.json. Run `ollama pull <model>` for each
-# entry under provider.ollama.models.
+# service, configured via ~/.config/opencode/opencode.json. Run
+# `ollama pull <model>` for each entry under provider.ollama.models.
 #
-# The Prime Intellect API key stays out of the repo: on each machine,
-# run `/connect` in opencode, choose "Other", enter provider ID `prime`
-# and paste a key with the Inference permission. opencode keeps it in
-# ~/.local/share/opencode/auth.json.
+# Hosted providers such as Prime Intellect and Morph need no config:
+# opencode's built-in catalog (models.dev) defines them and keeps their
+# model lists current. API keys stay out of the repo: on each machine,
+# run `/connect` in opencode, pick the provider and paste the key (for
+# Prime Intellect, one with the Inference permission). opencode keeps
+# them in ~/.local/share/opencode/auth.json.
 
 let
   # The model selector is "<providerID>/<modelID>"; the modelID is the
@@ -33,17 +34,6 @@ let
         "granite4.1:30b".name = "Granite 4.1 30B";
         "qwen3-coder:30b".name = "Qwen3 Coder 30B";
         "qwen3.6:35b".name = "Qwen 3.6 35B";
-      };
-    };
-
-    # Prime Intellect's OpenAI-compatible endpoint. List the available
-    # model IDs with `prime inference models`.
-    provider.prime = {
-      npm = "@ai-sdk/openai-compatible";
-      name = "Prime Intellect";
-      options.baseURL = "https://api.pinference.ai/api/v1";
-      models = {
-        "prime-intellect/intellect-3".name = "INTELLECT-3";
       };
     };
 
