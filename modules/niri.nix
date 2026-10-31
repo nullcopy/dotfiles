@@ -53,6 +53,7 @@ in
         // ----- Apps ----------------------------------------------------------
         Mod+T           hotkey-overlay-title="Terminal (alacritty)" { spawn "alacritty"; }
         Mod+B           hotkey-overlay-title="Browser (brave)"      { spawn "brave"; }
+        Mod+D           hotkey-overlay-title="Dictate"              { spawn "dictate"; }
 
         // ----- Noctalia panels ----------------------------------------------
         Mod+Space   ${nocta "Launcher" "panel-toggle launcher"}
