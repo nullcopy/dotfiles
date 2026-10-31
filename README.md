@@ -127,6 +127,10 @@ Then write `~/.config/aerc/accounts.conf` from this template and
 # this file; the two cred-cmds ask the GNOME keyring at connect time.
 
 [Personal]
+# The default From for new mail, RFC 5322 form. Required in every
+# account section: aerc refuses to load one without it.
+#   from = nullcopy <john@coldnoise.net>
+from = Your Name <you@domain>
 # IMAPS on 993; percent-encode the @ in the address as %40 in the URL.
 #   source = imaps://john%40coldnoise.net@imap.forwardemail.net:993
 source = imaps://<you>%40<domain>@imap.forwardemail.net:993
