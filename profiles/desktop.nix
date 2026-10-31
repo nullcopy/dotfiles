@@ -4,6 +4,7 @@
   imports = [
     ./headless.nix
     ../modules/desktop.nix
+    ../modules/dictation.nix
     ../modules/niri.nix
     ../modules/mail.nix
   ];
