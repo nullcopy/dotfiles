@@ -15,7 +15,7 @@ app-state/             # configs apps rewrite (see "App state")
 hosts/                 # host-specific configs, one module per machine
 profiles/              # the two types
   headless.nix         # CLI only: modules/
-  desktop.nix          # headless plus modules/desktop.nix and modules/niri.nix
+  desktop.nix          # headless plus modules/desktop.nix, niri.nix and mail.nix
 modules/               # one module per concern
   default.nix          # imports the always-on modules; my.* options, identity, base packages, nix.gc
   zsh.nix              # zsh and starship
@@ -28,6 +28,7 @@ modules/               # one module per concern
   zellij.nix           # zellij (tmux stays installed beside it)
   desktop.nix          # GUI apps, noctalia, alacritty — desktop only
   niri.nix             # niri keybindings wired to Noctalia IPC — desktop only
+  mail.nix             # aerc client; the account file stays machine-local — desktop only
   updates.nix          # daily timer that fetches input updates ahead of a switch
 devShells/             # fallback per-language shells (see "devShells")
 doc/                   # longer notes (checkout.md, devshells.md, updates.md)
@@ -44,8 +45,8 @@ in `flake.nix`, pointing at its module under `hosts/`:
 
 The module imports one of the two types, `profiles/headless.nix` (CLI
 only: zsh, git, neovim, devShells) or `profiles/desktop.nix` (headless
-plus niri, noctalia, GUI apps), and holds whatever the machine alone
-gets: packages and program settings.
+plus niri, noctalia, GUI apps, aerc), and holds whatever the machine
+alone gets: packages and program settings.
 
 ```nix
 # hosts/oak.nix
@@ -93,6 +94,63 @@ git config --file ~/.config/git/local tag.gpgsign true
 the file does not exist. The file holds whatever else differs on this
 machine alone. To stop signing here, delete the file. The choice is
 recorded on the machine and never in this repo.
+
+## Mail
+
+aerc is declared in `modules/mail.nix` (desktop type only): the flake
+owns the client and its public settings. The account does not live
+here at all — `~/.config/aerc/accounts.conf` is written once per
+machine, the same deal as `~/.config/git/local` for commit signing:
+the choice is recorded on the machine and never in this repo.
+home-manager declares no accounts, so it never generates the file, and
+a 0600 local file passes aerc's permission check without
+`unsafe-accounts-conf`.
+
+aerc has no keyring support of its own: it runs `source-cred-cmd` /
+`outgoing-cred-cmd` and reads their output. Both are `secret-tool
+lookup` against the GNOME keyring, which nixos-core's
+`core.desktop.enable` runs and unlocks at greetd login — which is why
+aerc is desktop-only. Store the mailbox password once, before the
+first start (Forward Email's generated alias password):
+
+```
+secret-tool store --label='aerc <you@domain>' email <you@domain>
+```
+
+Then write `~/.config/aerc/accounts.conf` from this template and
+`chmod 600` it:
+
+```ini
+# ~/.config/aerc/accounts.conf — one section per account, any section
+# name aerc shows in the sidebar. chmod 600 is required: aerc refuses
+# to start on a group/world-readable file. The password never goes in
+# this file; the two cred-cmds ask the GNOME keyring at connect time.
+
+[Personal]
+# IMAPS on 993; percent-encode the @ in the address as %40 in the URL.
+#   source = imaps://john%40coldnoise.net@imap.forwardemail.net:993
+source = imaps://<you>%40<domain>@imap.forwardemail.net:993
+# IMAP password from the keyring (stored once, see above).
+#   source-cred-cmd = secret-tool lookup email john@coldnoise.net
+source-cred-cmd = secret-tool lookup email <you@domain>
+# SMTPS with PLAIN auth on 465.
+#   outgoing = smtps+plain://john%40coldnoise.net@smtp.forwardemail.net:465
+outgoing = smtps+plain://<you>%40<domain>@smtp.forwardemail.net:465
+# SMTP password, same keyring entry.
+#   outgoing-cred-cmd = secret-tool lookup email john@coldnoise.net
+outgoing-cred-cmd = secret-tool lookup email <you@domain>
+# Forward Email's sent folder is "Sent Mail", not "Sent"; a second
+# account is just another section, e.g. [Work].
+copy-to = Sent Mail
+postpone = Drafts
+default = INBOX
+```
+
+If aerc's setup wizard ran before this, it already wrote the file with
+the password in clear text: strip the password out of the two URLs,
+add the two `cred-cmd` lines from the template, and delete it — the
+keyring holds it from now on. The wizard's other guesses are fine
+except `copy-to`: the server's sent folder is `Sent Mail`, not `Sent`.
 
 ## App state
 
