@@ -22,6 +22,7 @@
     ./neovim.nix
     ./opencode.nix
     ./updates.nix
+    ./zellij.nix
   ];
 
   options.my = {
