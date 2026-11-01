@@ -30,6 +30,18 @@ let
       };
     };
 
+    # Remote MCP servers. Remote servers use OAuth by default: run
+    # `/mcps` in opencode and sign in once per server.
+    mcp.servers.dagny = {
+      type = "remote";
+      url = "https://dagny.co/mcp";
+    };
+
+    mcp.servers.linear = {
+      type = "remote";
+      url = "https://mcp.linear.app/mcp";
+    };
+
     model = defaultModel;
   };
 in
