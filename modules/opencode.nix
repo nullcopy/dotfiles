@@ -37,6 +37,11 @@ let
       url = "https://dagny.co/mcp";
     };
 
+    mcp.servers.linear = {
+      type = "remote";
+      url = "https://mcp.linear.app/mcp";
+    };
+
     model = defaultModel;
   };
 in
