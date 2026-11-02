@@ -1,13 +1,16 @@
 { pkgs, ... }:
 
-# opencode (https://opencode.ai) wired to the machine's local ollama
-# service, configured via ~/.config/opencode/opencode.json. Run
-# `ollama pull <model>` for each entry under provider.ollama.models.
+# opencode (https://opencode.ai), configured via
+# ~/.config/opencode/opencode.json. The default model comes from
+# opencode's built-in catalog (models.dev); its API key stays out of the
+# repo, added per machine with `/connect`. Local ollama models are wired
+# in too: run `ollama pull <model>` for each entry under
+# provider.ollama.models.
 
 let
-  # The model selector is "<providerID>/<modelID>"; the modelID is the
-  # ollama tag.
-  defaultModel = "ollama/qwen3.6:35b";
+  # The model selector is "<providerID>/<modelID>"; ollama model IDs are
+  # the ollama tag.
+  defaultModel = "venice/deepseek-v4-1-flash";
 
   opencodeConfig = {
     "$schema" = "https://opencode.ai/config.json";

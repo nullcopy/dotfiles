@@ -24,7 +24,7 @@ modules/               # one module per concern
   direnv.nix           # direnv + nix-direnv for project flakes (see "devShells")
   git.nix              # git, gpg, gwt
   neovim.nix           # nixvim config (AstroNvim-flavoured UX)
-  opencode.nix         # opencode pointed at the local ollama service
+  opencode.nix         # opencode: hosted default model plus local ollama
   zellij.nix           # zellij (tmux stays installed beside it)
   desktop.nix          # GUI apps, noctalia, alacritty — desktop only
   niri.nix             # niri keybindings wired to Noctalia IPC — desktop only
