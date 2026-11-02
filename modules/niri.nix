@@ -39,7 +39,6 @@ in
             tap
             natural-scroll
         }
-        focus-follows-mouse
     }
 
     // Launch Noctalia with niri (replaces the deprecated systemd unit).
