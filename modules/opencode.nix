@@ -1,11 +1,11 @@
 { pkgs, ... }:
 
-# opencode (https://opencode.ai), configured via
-# ~/.config/opencode/opencode.json. The default model comes from
-# opencode's built-in catalog (models.dev); its API key stays out of the
-# repo, added per machine with `/connect`. Local ollama models are wired
-# in too: run `ollama pull <model>` for each entry under
-# provider.ollama.models.
+# opencode (https://opencode.ai): server configuration in
+# ~/.config/opencode/opencode.json, terminal settings in cli.json
+# beside it. The default model comes from opencode's built-in catalog
+# (models.dev); its API key stays out of the repo, added per machine
+# with `/connect`. Local ollama models are wired in too: run
+# `ollama pull <model>` for each entry under provider.ollama.models.
 
 let
   # The model selector is "<providerID>/<modelID>"; ollama model IDs are
@@ -47,6 +47,14 @@ let
 
     model = defaultModel;
   };
+
+  # Terminal settings, kept apart from the server config: model
+  # reasoning stays out of the transcript, so a session reads as
+  # prompts and answers.
+  opencodeCliConfig = {
+    "$schema" = "https://opencode.ai/v2/cli.json";
+    session.thinking = "hide";
+  };
 in
 {
   home.packages = [ pkgs.opencode ];
@@ -54,4 +62,8 @@ in
   xdg.configFile."opencode/opencode.json".source =
     (pkgs.formats.json { }).generate "opencode.json"
       opencodeConfig;
+
+  xdg.configFile."opencode/cli.json".source =
+    (pkgs.formats.json { }).generate "cli.json"
+      opencodeCliConfig;
 }
