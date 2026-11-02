@@ -49,11 +49,13 @@ let
   };
 
   # Terminal settings, kept apart from the server config: model
-  # reasoning stays out of the transcript, so a session reads as
-  # prompts and answers.
+  # reasoning stays out of the transcript and each run of tool calls
+  # collapses to one summary line, so a session reads as prompts,
+  # answers and a line per burst of work.
   opencodeCliConfig = {
     "$schema" = "https://opencode.ai/v2/cli.json";
     session.thinking = "hide";
+    session.verbosity = "low";
   };
 in
 {
