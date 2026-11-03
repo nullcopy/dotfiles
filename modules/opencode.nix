@@ -52,10 +52,19 @@ let
   # reasoning stays out of the transcript and each run of tool calls
   # collapses to one summary line, so a session reads as prompts,
   # answers and a line per burst of work.
+  #
+  # Home and End move the prompt cursor to the start and end of the
+  # current line, matching their behaviour in the diff viewer, session
+  # transcript and dialogs. The defaults, ctrl+a and ctrl+e, stay bound.
   opencodeCliConfig = {
     "$schema" = "https://opencode.ai/v2/cli.json";
     session.thinking = "hide";
     session.verbosity = "low";
+
+    keybinds = {
+      "input.line.home" = "ctrl+a,home";
+      "input.line.end" = "ctrl+e,end";
+    };
   };
 in
 {
