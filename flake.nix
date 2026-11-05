@@ -97,6 +97,7 @@
       # applied by guess.
       homeConfigurations = lib.mapAttrs mkHome {
         "nullcopy@aurora" = ./hosts/aurora.nix;
+        "nullcopy@citadel" = ./hosts/citadel.nix;
         "nullcopy@obelisk" = ./hosts/obelisk.nix;
       };
 
