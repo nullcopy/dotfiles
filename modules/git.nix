@@ -18,6 +18,7 @@
         email = "john@coldnoise.net";
       };
       core.editor = "vim";
+      init.defaultBranch = "main";
       # Link worktrees to their repo with relative paths, so a gwt
       # workspace keeps working after it is renamed or moved. With absolute
       # paths, every git command in a moved worktree fails with "not a git
