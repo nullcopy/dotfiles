@@ -14,7 +14,7 @@
     enable = true;
     settings = {
       user = {
-        name = "John B.";
+        name = "nullcopy";
         email = "john@coldnoise.net";
       };
       core.editor = "vim";
