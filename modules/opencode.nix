@@ -10,7 +10,7 @@
 let
   # The model selector is "<providerID>/<modelID>"; ollama model IDs are
   # the ollama tag.
-  defaultModel = "venice/deepseek-v4-1-flash";
+  defaultModel = "morph/morph-dsv41flash";
 
   opencodeConfig = {
     "$schema" = "https://opencode.ai/config.json";
