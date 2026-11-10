@@ -10,7 +10,7 @@
 let
   # The model selector is "<providerID>/<modelID>"; ollama model IDs are
   # the ollama tag.
-  defaultModel = "venice/deepseek-v4-1-flash";
+  defaultModel = "morph/morph-dsv41flash";
 
   opencodeConfig = {
     "$schema" = "https://opencode.ai/config.json";
@@ -44,6 +44,9 @@ let
       type = "remote";
       url = "https://mcp.linear.app/mcp";
     };
+
+    # Planning uses Kimi K3.1; building uses the default.
+    agents.plan.model = "morph/morph-kimik31";
 
     model = defaultModel;
   };
