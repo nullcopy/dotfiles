@@ -45,6 +45,9 @@ let
       url = "https://mcp.linear.app/mcp";
     };
 
+    # Planning uses Kimi K3.1; building uses the default.
+    agents.plan.model = "morph/morph-kimik31";
+
     model = defaultModel;
   };
 
