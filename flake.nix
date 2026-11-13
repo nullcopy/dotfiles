@@ -99,6 +99,7 @@
         "nullcopy@aurora" = ./hosts/aurora.nix;
         "nullcopy@citadel" = ./hosts/citadel.nix;
         "nullcopy@obelisk" = ./hosts/obelisk.nix;
+        "nullcopy@tempest" = ./hosts/tempest.nix;
       };
 
       # One shell per language; enter with `nix develop <flake>#<name>`.
