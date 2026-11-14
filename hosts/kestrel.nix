@@ -1,4 +1,4 @@
-# tempest, a desktop. What this machine alone gets goes beside the type.
+# kestrel desktop
 {
   imports = [ ../profiles/desktop.nix ];
 
