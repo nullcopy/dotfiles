@@ -96,11 +96,11 @@ widget_order = [ "lockscreen-login-box@eDP-1", "lockscreen-login-box@HDMI-A-1" ]
     [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
     box_height = 196.0
     box_width = 810.0
-    cx = 823.0
+    cx = 771.5625
     cy = 906.0
     output = "eDP-1"
     placement_height = 960.0
-    placement_width = 1536.0
+    placement_width = 1440.0
     rotation = 0.0
     type = "login_box"
 
@@ -147,13 +147,16 @@ wallpaper_scheme = "m3-content"
 directory = "/home/nullcopy/Pictures/Wallpapers"
 
     [wallpaper.default]
-    path = "/home/nullcopy/Pictures/Wallpapers/tokyo-alley-at-night.jpg"
+    path = "/home/nullcopy/Pictures/Wallpapers/kestrel-perched.jpg"
 
     [wallpaper.last]
-    path = "/home/nullcopy/Pictures/Wallpapers/tokyo-alley-at-night.jpg"
+    path = "/home/nullcopy/Pictures/Wallpapers/kestrel-perched.jpg"
 
     [wallpaper.monitors.HDMI-A-1]
     path = "/home/nullcopy/Pictures/Wallpapers/tokyo-alley-at-night.jpg"
+
+    [wallpaper.monitors.eDP-1]
+    path = "/home/nullcopy/Pictures/Wallpapers/kestrel-perched.jpg"
 
     [[wallpaper.favorite]]
     builtin_palette = "Kanagawa"
