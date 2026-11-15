@@ -1,5 +1,3 @@
-config_version = 13
-
 [bar.default]
 auto_hide = true
 end = [
@@ -145,18 +143,6 @@ wallpaper_scheme = "m3-content"
 
 [wallpaper]
 directory = "/home/nullcopy/Pictures/Wallpapers"
-
-    [wallpaper.default]
-    path = "/home/nullcopy/Pictures/Wallpapers/kestrel-perched.jpg"
-
-    [wallpaper.last]
-    path = "/home/nullcopy/Pictures/Wallpapers/kestrel-perched.jpg"
-
-    [wallpaper.monitors.HDMI-A-1]
-    path = "/home/nullcopy/Pictures/Wallpapers/tokyo-alley-at-night.jpg"
-
-    [wallpaper.monitors.eDP-1]
-    path = "/home/nullcopy/Pictures/Wallpapers/kestrel-perched.jpg"
 
     [[wallpaper.favorite]]
     builtin_palette = "Kanagawa"
