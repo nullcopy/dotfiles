@@ -958,41 +958,163 @@ in
         pcall(vim.api.nvim_buf_delete, target, { force = args.bang })
       end, { desc = 'Close buffer without quitting nvim', bang = true })
 
-      -- Toggle rust-analyzer's active cargo feature set for the running
-      -- client. rust-analyzer rebuilds its crate graph on
-      -- workspace/didChangeConfiguration — no LspRestart needed, but
-      -- re-indexing takes a moment.
-      --
-      -- Usage:
-      --   :RaFeatures all          -- index with every feature (--all-features)
-      --   :RaFeatures foo,bar      -- index only the listed features
-      --   :RaFeatures serde,tokio  -- (another concrete example)
-      --   :RaFeatures              -- reset to the crate's default features
-      vim.api.nvim_create_user_command('RaFeatures', function(args)
-        local features
-        if args.args == 'all' then
-          features = 'all'
-        elseif args.args == "" then
-          features = {}
-        else
-          features = vim.split(args.args, ',', { trimempty = true })
-        end
+      -- Build configuration for the running rust-analyzer client. Settings
+      -- are updated on the active client, sent through workspace/configuration,
+      -- and followed by a workspace reload so cargo metadata reflects them.
+      local function ra_clients(command)
         local clients = vim.lsp.get_clients({ name = 'rust_analyzer' })
         if #clients == 0 then
-          vim.notify('RaFeatures: no rust-analyzer client attached', vim.log.levels.WARN)
+          vim.notify(command .. ': no rust-analyzer client attached', vim.log.levels.WARN)
+        end
+        return clients
+      end
+
+      local function ra_cargo(c)
+        c.settings = c.settings or {}
+        c.settings['rust-analyzer'] = c.settings['rust-analyzer'] or {}
+        c.settings['rust-analyzer'].cargo = c.settings['rust-analyzer'].cargo or {}
+        return c.settings['rust-analyzer'].cargo
+      end
+
+      -- Split a comma-separated argument list, ignoring commas inside quoted
+      -- values and preserving quotes for cfg expressions such as
+      -- `zcash_unstable="nu8"`.
+      local function ra_list(value)
+        local entries = {}
+        local current = {}
+        local quoted = false
+        local escaped = false
+        for ch in value:gmatch('.') do
+          if escaped then
+            table.insert(current, ch)
+            escaped = false
+          elseif quoted and ch == '\\' then
+            table.insert(current, ch)
+            escaped = true
+          elseif ch == '"' then
+            table.insert(current, ch)
+            quoted = not quoted
+          elseif ch == ',' and not quoted then
+            local entry = vim.trim(table.concat(current))
+            if entry ~= "" then
+              table.insert(entries, entry)
+            end
+            current = {}
+          else
+            table.insert(current, ch)
+          end
+        end
+        local entry = vim.trim(table.concat(current))
+        if entry ~= "" then
+          table.insert(entries, entry)
+        end
+        return entries
+      end
+
+      local function ra_reload(command, c)
+        c:notify('workspace/didChangeConfiguration', { settings = c.settings })
+        c:request('rust-analyzer/reloadWorkspace', nil, function(err)
+          if err then
+            vim.notify(
+              command .. ': workspace reload failed: ' .. (err.message or vim.inspect(err)),
+              vim.log.levels.ERROR
+            )
+          end
+        end)
+      end
+
+      local function ra_show(command, c, key)
+        vim.notify(
+          ('%s: %s = %s'):format(command, key, vim.inspect(ra_cargo(c)[key] or {})),
+          vim.log.levels.INFO
+        )
+      end
+
+      -- Set the active cargo features. Bare usage reports the current value
+      -- and the bang form restores Cargo's default feature set.
+      vim.api.nvim_create_user_command('RaFeatures', function(args)
+        local clients = ra_clients('RaFeatures')
+        if #clients == 0 then
           return
         end
+
+        if args.args == "" and not args.bang then
+          for _, c in ipairs(clients) do
+            ra_show('RaFeatures', c, 'features')
+          end
+          return
+        elseif args.bang and args.args ~= "" then
+          vim.notify('RaFeatures!: takes no arguments', vim.log.levels.WARN)
+          return
+        end
+
+        local features
+        if args.bang then
+          features = {}
+        elseif args.args == 'all' then
+          features = 'all'
+        else
+          features = ra_list(args.args)
+        end
         for _, c in ipairs(clients) do
-          c.settings = vim.tbl_deep_extend('force', c.settings or {}, {
-            ['rust-analyzer'] = { cargo = { features = features } },
-          })
-          c:notify('workspace/didChangeConfiguration', { settings = c.settings })
+          ra_cargo(c).features = features
+          ra_reload('RaFeatures', c)
         end
         vim.notify('rust-analyzer features: ' .. vim.inspect(features))
       end, {
         nargs = '?',
-        desc = 'Set rust-analyzer cargo features (all | foo,bar | <empty>)',
+        bang = true,
+        desc = 'Set rust-analyzer cargo features (all | foo,bar | ! resets)',
       })
+
+      -- Set cfg flags such as `zcash_unstable="nu8"`. These are not cargo
+      -- features; use RaFeatures for feature names. Bare usage reports the
+      -- current value and the bang form clears all flags.
+      vim.api.nvim_create_user_command('RaCfgs', function(args)
+        local clients = ra_clients('RaCfgs')
+        if #clients == 0 then
+          return
+        end
+
+        if args.args == "" and not args.bang then
+          for _, c in ipairs(clients) do
+            ra_show('RaCfgs', c, 'cfgs')
+          end
+          return
+        elseif args.bang and args.args ~= "" then
+          vim.notify('RaCfgs!: takes no arguments', vim.log.levels.WARN)
+          return
+        end
+
+        local cfgs = args.bang and {} or ra_list(args.args)
+        for _, c in ipairs(clients) do
+          ra_cargo(c).cfgs = cfgs
+          ra_reload('RaCfgs', c)
+        end
+        vim.notify('rust-analyzer cfgs: ' .. vim.inspect(cfgs))
+      end, {
+        nargs = '?',
+        bang = true,
+        desc = 'Set rust-analyzer cargo cfgs (key="value",... | ! clears)',
+      })
+
+      vim.api.nvim_create_user_command('RaStatus', function()
+        local clients = ra_clients('RaStatus')
+        if #clients == 0 then
+          return
+        end
+
+        for _, c in ipairs(clients) do
+          local cargo = ra_cargo(c)
+          vim.notify(
+            ('RaStatus: features = %s, cfgs = %s'):format(
+              vim.inspect(cargo.features or {}),
+              vim.inspect(cargo.cfgs or {})
+            ),
+            vim.log.levels.INFO
+          )
+        end
+      end, { desc = 'Show rust-analyzer cargo features and cfg flags' })
     '';
 
     # =========================================================================

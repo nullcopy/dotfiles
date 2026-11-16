@@ -23,7 +23,9 @@ modules/               # one module per concern
   devshell.nix         # the `devshell` zsh function (see "devShells")
   direnv.nix           # direnv + nix-direnv for project flakes (see "devShells")
   git.nix              # git, gpg, gwt
-  neovim.nix           # nixvim config (AstroNvim-flavoured UX)
+  nvim/
+    default.nix        # nixvim config (AstroNvim-flavoured UX)
+    README.md          # editor commands and rust-analyzer build settings
   opencode.nix         # opencode: hosted default model plus local ollama
   zellij.nix           # zellij (tmux stays installed beside it)
   desktop.nix          # GUI apps, noctalia, alacritty — desktop only
