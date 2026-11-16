@@ -12,8 +12,9 @@ Rust-analyzer has two independent controls for conditional compilation:
 - Cargo features, set with `rust-analyzer.cargo.features`.
 - `--cfg` flags, set with `rust-analyzer.cargo.cfgs`.
 
-The commands below update the attached rust-analyzer client, send the new
-settings through `workspace/didChangeConfiguration`, then request
+The commands below update the attached rust-analyzer client and send the new
+settings through `workspace/didChangeConfiguration`. After rust-analyzer asks
+for and receives the new configuration, the client requests
 `rust-analyzer/reloadWorkspace`. The workspace reload re-runs `cargo metadata`,
 so it can take a moment on a large project. Restarting Neovim or the language
 server is not required.
@@ -47,11 +48,13 @@ Set `cfg` flags used for analysis:
 
 ```vim
 :RaCfgs zcash_unstable="nu8"
-:RaCfgs zcash_unstable="nu8",live_network_tests
+:RaCfgs zcash_unstable=nu8,live_network_tests
 ```
 
-Entries are comma-separated and quotes are preserved. These are cfg
-expressions, not Cargo features; `zcash_unstable="nu8"` matches:
+Entries are comma-separated. rust-analyzer's `cargo.cfgs` format is
+`key=value`, while Rust attributes write `key="value"`; both are accepted and
+stored in the former form. These are cfg expressions, not Cargo features;
+`zcash_unstable="nu8"` matches:
 
 ```rust
 #[cfg(zcash_unstable = "nu8")]

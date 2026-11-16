@@ -977,8 +977,7 @@ in
       end
 
       -- Split a comma-separated argument list, ignoring commas inside quoted
-      -- values and preserving quotes for cfg expressions such as
-      -- `zcash_unstable="nu8"`.
+      -- values so cfg expressions such as `zcash_unstable="nu8"` stay intact.
       local function ra_list(value)
         local entries = {}
         local current = {}
@@ -1011,16 +1010,81 @@ in
         return entries
       end
 
+      -- rust-analyzer parses cargo.cfgs entries as `key=value`, with no quotes
+      -- around the value. Accept Rust's `key="value"` spelling as well.
+      local function ra_cfg(entry)
+        local bang, body = entry:match('^(!?)(.*)$')
+        local key, value = body:match('^([^=]+)=(.*)$')
+        if not key then
+          return entry
+        end
+        if value:sub(1, 1) == '"' and value:sub(-1) == '"' and #value >= 2 then
+          value = value:sub(2, -2):gsub('\\(["\\])', '%1')
+        end
+        return bang .. key .. '=' .. value
+      end
+
+      -- rust-analyzer applies workspace/didChangeConfiguration by asking the
+      -- client for workspace/configuration. Reload only after that response is
+      -- sent, otherwise the server can reload with the previous settings.
+      local ra_pending = setmetatable({}, { __mode = 'k' })
+
       local function ra_reload(command, c)
-        c:notify('workspace/didChangeConfiguration', { settings = c.settings })
-        c:request('rust-analyzer/reloadWorkspace', nil, function(err)
-          if err then
-            vim.notify(
-              command .. ': workspace reload failed: ' .. (err.message or vim.inspect(err)),
-              vim.log.levels.ERROR
-            )
+        local state = ra_pending[c]
+        if not state then
+          state = {
+            handler = c.handlers['workspace/configuration']
+              or vim.lsp.handlers['workspace/configuration'],
+          }
+          c.handlers['workspace/configuration'] = function(err, params, ctx, config)
+            local result = state.handler and state.handler(err, params, ctx, config) or nil
+            if state.pending then
+              state.pending = false
+              if err then
+                vim.notify(
+                  state.command
+                    .. ': workspace configuration failed: '
+                    .. (err.message or vim.inspect(err)),
+                  vim.log.levels.ERROR
+                )
+              else
+                -- The handler's return value becomes the response, so defer the
+                -- reload to the next event-loop turn.
+                vim.schedule(function()
+                  if vim.lsp.get_client_by_id(c.id) ~= c then
+                    return
+                  end
+                  local ok = c:request('rust-analyzer/reloadWorkspace', nil, function(request_err)
+                    if request_err then
+                      vim.notify(
+                        state.command
+                          .. ': workspace reload failed: '
+                          .. (request_err.message or vim.inspect(request_err)),
+                        vim.log.levels.ERROR
+                      )
+                    end
+                  end)
+                  if not ok then
+                    vim.notify(
+                      state.command .. ': workspace reload request failed',
+                      vim.log.levels.ERROR
+                    )
+                  end
+                end)
+              end
+            end
+            return result
           end
-        end)
+          ra_pending[c] = state
+        end
+
+        state.command = command
+        state.pending = true
+        local ok = c:notify('workspace/didChangeConfiguration', { settings = c.settings })
+        if not ok then
+          state.pending = false
+          vim.notify(command .. ': failed to send configuration', vim.log.levels.ERROR)
+        end
       end
 
       local function ra_show(command, c, key)
@@ -1068,8 +1132,9 @@ in
       })
 
       -- Set cfg flags such as `zcash_unstable="nu8"`. These are not cargo
-      -- features; use RaFeatures for feature names. Bare usage reports the
-      -- current value and the bang form clears all flags.
+      -- features; use RaFeatures for feature names. Entries are normalized to
+      -- rust-analyzer's `key=value` form. Bare usage reports the current value
+      -- and the bang form clears all flags.
       vim.api.nvim_create_user_command('RaCfgs', function(args)
         local clients = ra_clients('RaCfgs')
         if #clients == 0 then
@@ -1086,7 +1151,7 @@ in
           return
         end
 
-        local cfgs = args.bang and {} or ra_list(args.args)
+        local cfgs = args.bang and {} or vim.tbl_map(ra_cfg, ra_list(args.args))
         for _, c in ipairs(clients) do
           ra_cargo(c).cfgs = cfgs
           ra_reload('RaCfgs', c)
