@@ -59,7 +59,7 @@
 
     # Everything built on my.repoPath fails quietly when it leads
     # nowhere: noctalia starts over from defaults behind a dangling
-    # app-state link, and the fetch timer skips. So a switch stops
+    # config link, and the fetch timer skips. So a switch stops
     # here, before the write boundary, while nothing has changed yet.
     home.activation.checkRepoPath = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
       if [[ ! -e ${lib.escapeShellArg "${config.my.repoPath}/flake.nix"} ]]; then

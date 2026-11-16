@@ -11,7 +11,8 @@ niri + noctalia — on NixOS that is
 
 ```
 flake.nix              # homeConfigurations."<user>@<host>" per machine + devShells
-app-state/             # configs apps rewrite (see "App state")
+app-state/             # out-of-store config (noctalia palettes)
+config/                # shared declarative config (noctalia)
 hosts/                 # host-specific configs, one module per machine
 profiles/              # the two types
   headless.nix         # CLI only: modules/
@@ -158,17 +159,29 @@ add the two `cred-cmd` lines from the template, and delete it — the
 keyring holds it from now on. The wizard's other guesses are fine
 except `copy-to`: the server's sent folder is `Sent Mail`, not `Sent`.
 
-## App state
+## Noctalia config and state
 
-Apps that rewrite their own config keep their file in `app-state/`,
-linked out-of-store into place: the file in the working tree **is** the
-live file. A change in the app shows up as an unstaged diff; commit it
-to persist. The links go through `~/.config/dotfiles`, so they follow
-the checkout wherever that path leads.
+Noctalia has two layers. Shared settings live in `config/` and are
+linked out-of-store into place, so edits in the checkout are live
+without a rebuild. The Settings UI writes machine-local overrides to
+`~/.local/state/noctalia/settings.toml`, which loads last and is not
+tracked here.
 
-- `app-state/noctalia/settings.toml` → `~/.local/state/noctalia/settings.toml`
-  (everything the v5 settings UI writes)
+- `config/noctalia/config.toml` → `~/.config/noctalia/config.toml`
+  (shared settings)
 - `app-state/noctalia/palettes/` → `~/.config/noctalia/palettes/`
+- `~/.local/state/noctalia/settings.toml` (machine-local GUI overrides)
+
+A desktop host sets its default wallpaper with
+`my.noctalia.wallpaper`; Home Manager writes it to
+`~/.config/noctalia/wallpaper.toml`. Choosing a wallpaper in the UI
+stores that choice in the local state file and overrides the host
+default on that machine only.
+
+To share a UI change, copy the setting into
+`config/noctalia/config.toml`, or inspect the merged result with
+`noctalia config export`. Remove the corresponding local override to
+fall back to the shared value.
 
 ## devShells
 
