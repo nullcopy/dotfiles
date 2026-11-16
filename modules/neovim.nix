@@ -1066,6 +1066,55 @@ in
         bang = true,
         desc = 'Set rust-analyzer cargo features (all | foo,bar | ! resets)',
       })
+
+      -- Set cfg flags such as `zcash_unstable="nu8"`. These are not cargo
+      -- features; use RaFeatures for feature names. Bare usage reports the
+      -- current value and the bang form clears all flags.
+      vim.api.nvim_create_user_command('RaCfgs', function(args)
+        local clients = ra_clients('RaCfgs')
+        if #clients == 0 then
+          return
+        end
+
+        if args.args == "" and not args.bang then
+          for _, c in ipairs(clients) do
+            ra_show('RaCfgs', c, 'cfgs')
+          end
+          return
+        elseif args.bang and args.args ~= "" then
+          vim.notify('RaCfgs!: takes no arguments', vim.log.levels.WARN)
+          return
+        end
+
+        local cfgs = args.bang and {} or ra_list(args.args)
+        for _, c in ipairs(clients) do
+          ra_cargo(c).cfgs = cfgs
+          ra_reload('RaCfgs', c)
+        end
+        vim.notify('rust-analyzer cfgs: ' .. vim.inspect(cfgs))
+      end, {
+        nargs = '?',
+        bang = true,
+        desc = 'Set rust-analyzer cargo cfgs (key="value",... | ! clears)',
+      })
+
+      vim.api.nvim_create_user_command('RaStatus', function()
+        local clients = ra_clients('RaStatus')
+        if #clients == 0 then
+          return
+        end
+
+        for _, c in ipairs(clients) do
+          local cargo = ra_cargo(c)
+          vim.notify(
+            ('RaStatus: features = %s, cfgs = %s'):format(
+              vim.inspect(cargo.features or {}),
+              vim.inspect(cargo.cfgs or {})
+            ),
+            vim.log.levels.INFO
+          )
+        end
+      end, { desc = 'Show rust-analyzer cargo features and cfg flags' })
     '';
 
     # =========================================================================
