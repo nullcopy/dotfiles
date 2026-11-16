@@ -44,10 +44,10 @@ a `pkgs.mkShell`.
 ## Editor tooling
 
 nvim installs no language server and no formatter, for any language.
-`modules/neovim.nix` sets `package = null` on every server it configures,
-so nvim runs whatever `clangd`, `gopls` or `rust-analyzer` is on `PATH`,
-and the home closure carries none of them. A server or formatter that is
-not on `PATH` does not run.
+`modules/nvim/default.nix` sets `package = null` on every server it
+configures, so nvim runs whatever `clangd`, `gopls` or `rust-analyzer` is on
+`PATH`, and the home closure carries none of them. A server or formatter that
+is not on `PATH` does not run.
 
 They come from a shell here or from the project's own flake, so start
 nvim inside one. nvim is configured for two servers that no shell here
