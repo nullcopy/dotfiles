@@ -984,15 +984,12 @@ in
       end
 
       local function ra_default_features_label(value)
-        if value == nil then
-          return 'default'
-        end
         return value and 'disabled' or 'enabled'
       end
 
       local function ra_cfg_labels(value)
         if value == nil then
-          return 'default', 'default'
+          return 'default', 'none'
         end
         local enabled, disabled = {}, {}
         for _, cfg in ipairs(value) do

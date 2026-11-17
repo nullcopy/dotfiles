@@ -128,9 +128,12 @@ disabled cfgs for each running client, grouped by workspace root. For example:
 ```
 
 `default` means a runtime override is absent and the existing configuration
-applies. `none` means the explicitly supplied list is empty. The default-feature
-base is `enabled` or `disabled` when explicitly selected. All three commands
-warn instead of failing when no rust-analyzer client is running.
+applies. `none` means the explicitly supplied list is empty. Default features
+are `enabled` when `cargo.noDefaultFeatures` is unset or `false`, and `disabled`
+when it is `true`. Disabled cfgs are `none` unless exclusions are explicitly
+configured; enabled cfgs remain `default` without an override because their
+values come from rustc, the target and build scripts. All three commands warn
+instead of failing when no rust-analyzer client is running.
 
 These commands are deliberately LSP-only. They do not modify
 `.cargo/config.toml`, dirty the Git worktree, or set features and cfgs for
