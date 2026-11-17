@@ -56,10 +56,11 @@ controls conditional Rust source code. The `Ra` commands change both kinds of
 setting in running rust-analyzer clients without editing the repository.
 
 Updating either setting preserves other rust-analyzer settings and sends
-`workspace/didChangeConfiguration`. Rust-analyzer then re-indexes without an
-LSP restart. Every running rust-analyzer client is updated. The overrides are
-session-local: they are not saved in this repository and do not apply to new
-Neovim sessions.
+`workspace/didChangeConfiguration`. Every running rust-analyzer client is
+updated. After changing cfg flags, run `:LspCargoReload` to reload the Cargo
+workspace and apply the new cfg set; a full LSP restart is not necessary. The
+overrides are session-local: they are not saved in this repository and do not
+apply to new Neovim sessions.
 
 ### Cargo features
 
@@ -96,6 +97,7 @@ For example, this makes librustzcash's NU8-gated source available to the LSP:
 
 ```vim
 :RaCfgs zcash_unstable=nu8
+:LspCargoReload
 ```
 
 Multiple enabled and disabled entries remain comma-separated:
