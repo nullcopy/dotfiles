@@ -19,7 +19,7 @@
     ./devshell.nix
     ./direnv.nix
     ./git.nix
-    ./neovim.nix
+    ./neovim
     ./opencode.nix
     ./updates.nix
     ./zellij.nix
