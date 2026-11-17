@@ -983,56 +983,128 @@ in
         return tostring(value)
       end
 
+      local function ra_default_features_label(value)
+        if value == nil then
+          return 'default'
+        end
+        return value and 'disabled' or 'enabled'
+      end
+
+      local function ra_cfg_labels(value)
+        if value == nil then
+          return 'default', 'default'
+        end
+        local enabled, disabled = {}, {}
+        for _, cfg in ipairs(value) do
+          if cfg:sub(1, 1) == '!' then
+            table.insert(disabled, cfg:sub(2))
+          else
+            table.insert(enabled, cfg)
+          end
+        end
+        return ra_setting_label(enabled), ra_setting_label(disabled)
+      end
+
       local function ra_show_status(clients)
         local output = {}
         for _, c in ipairs(clients) do
           local cargo = vim.tbl_get(c.settings or {}, 'rust-analyzer', 'cargo') or {}
+          local enabled_cfgs, disabled_cfgs = ra_cfg_labels(cargo.cfgs)
           table.insert(output, string.format(
-            '%s:\n  features: %s\n  cfgs: %s',
+            '%s:\n  default features: %s\n  features: %s\n  cfgs: %s\n  disabled cfgs: %s',
             c.root_dir or 'rust-analyzer',
+            ra_default_features_label(cargo.noDefaultFeatures),
             ra_setting_label(cargo.features),
-            ra_setting_label(cargo.cfgs)
+            enabled_cfgs,
+            disabled_cfgs
           ))
         end
         vim.notify(table.concat(output, '\n\n'))
       end
 
-      local function ra_update_cargo(command, setting, value)
+      local function ra_update_cargo(command, updates, resets)
         local clients = ra_clients(command)
         if not clients then
           return
         end
         for _, c in ipairs(clients) do
-          c.settings = vim.tbl_deep_extend('force', c.settings or {}, {
-            ['rust-analyzer'] = { cargo = { [setting] = value } },
-          })
+          c.settings = vim.deepcopy(c.settings or {})
+          if updates then
+            c.settings = vim.tbl_deep_extend('force', c.settings, {
+              ['rust-analyzer'] = { cargo = updates },
+            })
+          end
+          local cargo = vim.tbl_get(c.settings, 'rust-analyzer', 'cargo')
+          if cargo then
+            for _, setting in ipairs(resets or {}) do
+              cargo[setting] = nil
+            end
+          end
           c:notify('workspace/didChangeConfiguration', { settings = c.settings })
         end
         ra_show_status(clients)
       end
 
+      local function ra_features_usage()
+        vim.notify(
+          'RaFeatures: usage: RaFeatures [--default | --no-default] [all | foo,bar]',
+          vim.log.levels.WARN
+        )
+      end
+
       vim.api.nvim_create_user_command('RaFeatures', function(args)
-        local features
-        if args.bang or args.args == "" then
-          features = {}
-        elseif args.args == 'all' then
-          features = 'all'
-        else
-          features = vim.split(args.args, ',', { trimempty = true })
+        if args.bang then
+          ra_update_cargo('RaFeatures', nil, { 'features', 'noDefaultFeatures' })
+          return
         end
-        ra_update_cargo('RaFeatures', 'features', features)
+
+        local base = args.fargs[1]
+        local no_default = false
+        local features_arg = args.args
+        if base == '--default' or base == '--no-default' then
+          if #args.fargs > 2 then
+            ra_features_usage()
+            return
+          end
+          no_default = base == '--no-default'
+          features_arg = args.fargs[2] or ""
+        elseif #args.fargs > 1 or (base and base:sub(1, 2) == '--') then
+          ra_features_usage()
+          return
+        end
+
+        local features
+        if features_arg == 'all' then
+          if no_default then
+            ra_features_usage()
+            return
+          end
+          features = 'all'
+        elseif features_arg == "" then
+          features = {}
+        else
+          features = vim.split(features_arg, ',', { trimempty = true })
+        end
+        ra_update_cargo('RaFeatures', {
+          features = features,
+          noDefaultFeatures = no_default,
+        })
       end, {
-        nargs = '?',
+        nargs = '*',
         bang = true,
-        desc = 'Set rust-analyzer Cargo features (all | foo,bar | empty; ! resets)',
+        desc = 'Set rust-analyzer Cargo features ([--default | --no-default] [all | foo,bar]; ! resets)',
       })
 
       vim.api.nvim_create_user_command('RaCfgs', function(args)
+        if args.bang then
+          ra_update_cargo('RaCfgs', nil, { 'cfgs' })
+          return
+        end
         local cfgs = {}
-        if not args.bang and args.args ~= "" then
+        if args.args ~= "" then
           cfgs = vim.split(args.args, ',', { trimempty = true })
         end
-        ra_update_cargo('RaCfgs', 'cfgs', cfgs)
+        ra_update_cargo('RaCfgs', { cfgs = cfgs })
       end, {
         nargs = '?',
         bang = true,
