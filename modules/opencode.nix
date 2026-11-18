@@ -8,10 +8,6 @@
 # `ollama pull <model>` for each entry under provider.ollama.models.
 
 let
-  # The model selector is "<providerID>/<modelID>"; ollama model IDs are
-  # the ollama tag.
-  defaultModel = "morph/morph-dsv41flash";
-
   opencodeConfig = {
     "$schema" = "https://opencode.ai/config.json";
 
@@ -45,10 +41,11 @@ let
       url = "https://mcp.linear.app/mcp";
     };
 
-    # Planning uses Kimi K3.1; building uses the default.
-    agents.plan.model = "morph/morph-kimik31";
+    # Default model
+    model = "venice/deepseek-v4-1-flash-1017-uncensored";
 
-    model = defaultModel;
+    # Planning model
+    agents.plan.model = "venice/z-ai-glm-5-3";
   };
 
   # Terminal settings, kept apart from the server config: model
